@@ -1,0 +1,21 @@
+<?php
+require_once("../includes/db.php");
+header('Content-Type: application/json');
+
+$modalidad_id = isset($_GET['modalidad_id']) ? intval($_GET['modalidad_id']) : 0;
+
+$sql = "SELECT id, nombre FROM servicios WHERE modalidad_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $modalidad_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$servicios = [];
+while ($row = $result->fetch_assoc()) {
+	$servicios[] = [
+		'id' => $row['id'],
+		'nombre' => $row['nombre']
+	];
+}
+echo json_encode($servicios);
+?>
