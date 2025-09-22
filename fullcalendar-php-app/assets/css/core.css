@@ -1,0 +1,49 @@
+/*! @fullcalendar/core v6.1.19 | (c) 2024 Adam Shaw | MIT License */
+.fc {
+  /* base styles for FullCalendar */
+  direction: ltr;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-size: 1em;
+  color: #222;
+  background: #fff;
+}
+
+.fc .fc-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1em;
+}
+
+.fc .fc-button {
+  background: #eee;
+  border: 1px solid #ddd;
+  padding: 0.4em 1em;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-right: 2px;
+}
+
+.fc .fc-button-primary {
+  background: #007bff;
+  color: #fff;
+  border: 1px solid #007bff;
+}
+
+.fc .fc-button-active, .fc .fc-button:active {
+  background: #0056b3;
+  color: #fff;
+}
+
+.fc .fc-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fc .fc-toolbar-title {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+/* ... puedes agregar más estilos si lo requieres ... */

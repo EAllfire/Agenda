@@ -1,0 +1,38 @@
+/*! @fullcalendar/timegrid v6.1.19 | (c) 2024 Adam Shaw | MIT License */
+.fc-timegrid {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.fc-timegrid .fc-timegrid-slot {
+  height: 2em;
+  border-bottom: 1px solid #eee;
+}
+
+.fc-timegrid .fc-timegrid-col {
+  border-left: 1px solid #eee;
+}
+
+.fc-timegrid .fc-event {
+  background: #3788d8;
+  color: #fff;
+  border-radius: 3px;
+  border: none;
+  margin: 2px 0;
+  padding: 2px 6px;
+  font-size: 0.95em;
+}
+
+.fc-timegrid .fc-timegrid-axis {
+  background: #f8f9fa;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.fc-timegrid .fc-timegrid-divider {
+  border-bottom: 2px solid #007bff;
+}
+
+/* ... puedes agregar más estilos si lo requieres ... */

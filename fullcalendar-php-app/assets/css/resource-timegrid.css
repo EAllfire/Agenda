@@ -1,0 +1,25 @@
+/*! @fullcalendar/resource-timegrid v6.1.19 | (c) 2024 Adam Shaw | MIT License */
+.fc-resource-timegrid {
+  background: #fff;
+}
+
+.fc-resource-timegrid .fc-resource-area {
+  background: #f4f4f4;
+  border-right: 1px solid #ddd;
+}
+
+.fc-resource-timegrid .fc-resource-cell {
+  padding: 0.3em 0.6em;
+  font-size: 0.95em;
+  border-bottom: 1px solid #eee;
+}
+
+.fc-resource-timegrid .fc-event {
+  background: #6c757d;
+  color: #fff;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 0.95em;
+}
+
+/* ... puedes agregar más estilos si lo requieres ... */
