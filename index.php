@@ -26,9 +26,58 @@ require_once __DIR__ . '/includes/db.php';
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 15px;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 99999;
-    max-width: 240px;
+    max-width: 280px;
+  }
+  .estado-puntos {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    align-items: center;
+  }
+  .estado-punto {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  .estado-punto:hover {
+    transform: scale(1.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .estado-punto:active {
+    transform: scale(1.1);
+  }
+  .estado-punto.clickeable {
+    opacity: 0.6;
+  }
+  .estado-punto.clickeable:hover {
+    opacity: 1;
+  }
+  .estado-punto.activo {
+    opacity: 1 !important;
+  }
+  .estado-punto-tooltip {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 100001;
+  }
+  .estado-punto:hover .estado-punto-tooltip {
+    opacity: 1;
   }
     /* Cambia el color de fondo del día actual en FullCalendar */
     .fc-day-today, .fc-timegrid-col.fc-day-today {
@@ -452,6 +501,119 @@ require_once __DIR__ . '/includes/db.php';
       var bloquearBtn = document.getElementById('bloquearBtn');
       var agendarBtn = document.getElementById('agendarBtn');
       var lastDateClickInfo = null;
+      var tooltipActivo = null; // Variable global para controlar tooltips
+
+      // Event listener global para cerrar tooltip al hacer click fuera
+      document.addEventListener('click', function(e) {
+        if (tooltipActivo && !tooltipActivo.contains(e.target) && !e.target.closest('.fc-event')) {
+          // Verificar si el click es en un punto de estado (no cerrar en ese caso)
+          if (e.target.classList.contains('estado-punto') || e.target.closest('.estado-punto')) {
+            return; // No cerrar tooltip si se hace click en un punto de estado
+          }
+          
+          // Si el click no es en el tooltip ni en una cita, cerrar tooltip
+          if (tooltipActivo.parentNode) {
+            document.body.removeChild(tooltipActivo);
+          }
+          tooltipActivo = null;
+          
+          // Limpiar referencias en todos los elementos
+          var eventos = document.querySelectorAll('.fc-event');
+          eventos.forEach(function(evento) {
+            if (evento._fcTooltip) {
+              evento._fcTooltip = null;
+            }
+            if (evento._hideTimeout) {
+              clearTimeout(evento._hideTimeout);
+              evento._hideTimeout = null;
+            }
+          });
+        }
+      });
+
+      // Función para cambiar el estado de una cita
+      function cambiarEstadoCita(citaId, nuevoEstado, evento, elementoCita) {
+        // Mostrar indicador de carga
+        var tooltip = elementoCita._fcTooltip;
+        if (tooltip && tooltip.parentNode) {
+          var loadingDiv = tooltip.querySelector('.estado-puntos');
+          if (loadingDiv) {
+            loadingDiv.innerHTML = '<span style="font-size:12px;">Actualizando estado...</span>';
+          }
+        }
+        
+        var formData = new FormData();
+        formData.append('cita_id', citaId);
+        formData.append('estado', nuevoEstado);
+        
+        fetch('citas/actualizar_estado.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Actualizar el evento en el calendario
+            evento.setExtendedProp('estado', nuevoEstado);
+            evento.setProp('backgroundColor', data.nuevo_color);
+            evento.setProp('borderColor', data.nuevo_color);
+            
+            // Cerrar el tooltip actual
+            if (tooltip && tooltip.parentNode) {
+              document.body.removeChild(tooltip);
+              elementoCita._fcTooltip = null;
+              tooltipActivo = null;
+            } else if (tooltip) {
+              // Si el tooltip existe pero ya no tiene parent, solo limpiar las referencias
+              elementoCita._fcTooltip = null;
+              tooltipActivo = null;
+            }
+            
+            // Mostrar mensaje de éxito
+            var successMsg = document.createElement('div');
+            successMsg.style.cssText = `
+              position: fixed; top: 20px; right: 20px; z-index: 100000;
+              background: #4CAF50; color: white; padding: 12px 20px;
+              border-radius: 4px; font-family: Roboto, sans-serif;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            `;
+            successMsg.textContent = `Estado actualizado a: ${nuevoEstado}`;
+            document.body.appendChild(successMsg);
+            
+            setTimeout(() => {
+              if (successMsg.parentNode) {
+                document.body.removeChild(successMsg);
+              }
+            }, 3000);
+            
+          } else {
+            // Restablecer el tooltip si aún existe
+            var tooltip = elementoCita._fcTooltip;
+            if (tooltip && tooltip.parentNode) {
+              var loadingDiv = tooltip.querySelector('.estado-puntos');
+              if (loadingDiv) {
+                loadingDiv.innerHTML = '<span style="font-size:12px; color:red;">Error al actualizar</span>';
+              }
+            }
+            
+            alert('Error al actualizar el estado: ' + (data.error || 'Error desconocido'));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          
+          // Restablecer el tooltip si aún existe
+          var tooltip = elementoCita._fcTooltip;
+          if (tooltip && tooltip.parentNode) {
+            var loadingDiv = tooltip.querySelector('.estado-puntos');
+            if (loadingDiv) {
+              loadingDiv.innerHTML = '<span style="font-size:12px; color:red;">Error al actualizar</span>';
+            }
+          }
+          
+          alert('Error de conexión al actualizar el estado');
+        });
+      }
 
       var calendar = new FullCalendar.Calendar(calendarEl, {
         eventDidMount: function(info) {
@@ -463,12 +625,43 @@ require_once __DIR__ . '/includes/db.php';
           var telefono = event.extendedProps.telefono || '';
           var diagnostico = event.extendedProps.diagnostico || '';
           var pago = event.extendedProps.pago || 'No pagado';
+          var estadoActual = event.extendedProps.estado || '';
+          
+          // Definir todos los estados y sus colores
+          var todosLosEstados = [
+            {nombre: 'reservado', color: '#2196F3', label: 'Reservado'},
+            {nombre: 'confirmado', color: '#FF9800', label: 'Confirmado'},
+            {nombre: 'asistió', color: '#E91E63', label: 'Asistió'},
+            {nombre: 'no asistió', color: '#FF7F50', label: 'No asistió'},
+            {nombre: 'pendiente', color: '#F44336', label: 'Pendiente'},
+            {nombre: 'en espera', color: '#4CAF50', label: 'En espera'}
+          ];
+          
+          // Crear puntos de estados
+          var estadoPuntos = todosLosEstados.map(estado => {
+            var esActual = estadoActual.toLowerCase() === estado.nombre;
+            var claseEstado = esActual ? 'activo' : 'clickeable';
+            var border = esActual ? '2px solid #000' : '1px solid #ccc';
+            return `
+              <div class='estado-punto ${claseEstado}' 
+                   data-estado='${estado.nombre}'
+                   data-cita-id='${event.id}'
+                   style='background-color:${estado.color}; border:${border};'>
+                <div class='estado-punto-tooltip'>${estado.label}${esActual ? ' (Actual)' : ' - Click para cambiar'}</div>
+              </div>
+            `;
+          }).join('');
+          
           var tooltip = `
-            <div style='font-family:Roboto,sans-serif;max-width:220px;'>
+            <div style='font-family:Roboto,sans-serif;max-width:260px;'>
               <div style='font-weight:bold;font-size:16px;'>${paciente}</div>
               <div style='margin-bottom:4px;'>${servicio}</div>
               <div style='font-size:14px;'><span style='margin-right:6px;'>🕒</span>${horaInicio} - ${horaFin}</div>
               <div style='font-size:14px;'><span style='margin-right:6px;'>💲</span>${pago}</div>
+              <div class='estado-puntos'>
+                <span style='font-size:12px; margin-right:8px;'>Estados:</span>
+                ${estadoPuntos}
+              </div>
               <hr style='margin:6px 0;'>
               <div style='font-size:14px;'><span style='margin-right:6px;'>📱</span>${telefono}</div>
               <div style='font-size:14px;'><span style='margin-right:6px;'>💬</span>${diagnostico}</div>
@@ -476,6 +669,17 @@ require_once __DIR__ . '/includes/db.php';
           `;
           info.el.setAttribute('title', '');
           info.el.addEventListener('mouseenter', function(e) {
+            // Si ya hay un tooltip activo, no crear otro
+            if (tooltipActivo) {
+              return;
+            }
+            
+            // Limpiar cualquier timeout pendiente
+            if (info.el._hideTimeout) {
+              clearTimeout(info.el._hideTimeout);
+              info.el._hideTimeout = null;
+            }
+            
             let tip = document.createElement('div');
             tip.className = 'fc-custom-tooltip';
             tip.innerHTML = tooltip;
@@ -487,12 +691,43 @@ require_once __DIR__ . '/includes/db.php';
             tip.style.padding = '12px 16px';
             tip.style.borderRadius = '8px';
             tip.style.fontSize = '15px';
-            tip.style.pointerEvents = 'none';
+            tip.style.pointerEvents = 'auto';
             tip.style.top = (e.clientY + 12) + 'px';
             tip.style.left = (e.clientX + 12) + 'px';
             tip.id = 'fc-tooltip-'+event.id;
             document.body.appendChild(tip);
             info.el._fcTooltip = tip;
+            tooltipActivo = tip; // Marcar como tooltip activo
+            
+            // Prevenir que el tooltip desaparezca al hacer hover sobre él
+            tip.addEventListener('mouseenter', function() {
+              if (info.el._hideTimeout) {
+                clearTimeout(info.el._hideTimeout);
+                info.el._hideTimeout = null;
+              }
+            });
+            
+            tip.addEventListener('mouseleave', function() {
+              info.el._hideTimeout = setTimeout(function() {
+                if (info.el._fcTooltip && tooltipActivo === info.el._fcTooltip) {
+                  document.body.removeChild(info.el._fcTooltip);
+                  info.el._fcTooltip = null;
+                  tooltipActivo = null;
+                }
+              }, 300);
+            });
+            
+            // Agregar event listeners para los clicks en los puntos de estado
+            tip.addEventListener('click', function(e) {
+              if (e.target.classList.contains('estado-punto') && e.target.classList.contains('clickeable')) {
+                var nuevoEstado = e.target.getAttribute('data-estado');
+                var citaId = e.target.getAttribute('data-cita-id');
+                
+                if (nuevoEstado && citaId) {
+                  cambiarEstadoCita(citaId, nuevoEstado, event, info.el);
+                }
+              }
+            });
           });
           info.el.addEventListener('mousemove', function(e) {
             if (info.el._fcTooltip) {
@@ -501,10 +736,13 @@ require_once __DIR__ . '/includes/db.php';
             }
           });
           info.el.addEventListener('mouseleave', function() {
-            if (info.el._fcTooltip) {
-              document.body.removeChild(info.el._fcTooltip);
-              info.el._fcTooltip = null;
-            }
+            info.el._hideTimeout = setTimeout(function() {
+              if (info.el._fcTooltip && tooltipActivo === info.el._fcTooltip) {
+                document.body.removeChild(info.el._fcTooltip);
+                info.el._fcTooltip = null;
+                tooltipActivo = null;
+              }
+            }, 300);
           });
         },
         schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',

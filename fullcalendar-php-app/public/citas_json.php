@@ -22,6 +22,10 @@ while ($row = $result->fetch_assoc()) {
     $hora_fin = date('H:i:s', $hora + 3600);
   }
   // Colores por estado
+
+
+  //QUITAR ALGUNOS COLORES QUE NO SE NECESITAN
+  
   $color = null;
   switch (strtolower($row['estado'])) {
     case 'reservado':    $color = '#2196F3'; break;  // Azul
@@ -29,7 +33,7 @@ while ($row = $result->fetch_assoc()) {
     case 'asistió':      $color = '#E91E63'; break;  // Rosa
     case 'no asistió':   $color = '#FF7F50'; break;  // Coral
     case 'pendiente':    $color = '#F44336'; break;  // Rojo
-    case 'en espera':    $color = '#4CAF50'; break;  // Verde
+    case 'en espera':    $color = '#4CAF50'; break;  // Verde 
     default:             $color = '#9E9E9E'; break;  // Gris para otros/indefinidos
   }
   $eventos[] = [
