@@ -18,6 +18,18 @@ require_once __DIR__ . '/includes/db.php';
   <!-- Flatpickr CSS -->
   <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
   <style>
+  .fc-custom-tooltip {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    pointer-events: none;
+    z-index: 99999;
+    max-width: 240px;
+  }
     /* Cambia el color de fondo del día actual en FullCalendar */
     .fc-day-today, .fc-timegrid-col.fc-day-today {
       background: #fff !important;
@@ -26,8 +38,8 @@ require_once __DIR__ . '/includes/db.php';
     html, body {
       height: 100%;
       margin: 0;
-      padding: 0;
-      width: 100vw;
+    width: fit-content;
+  min-width: 320px;
       background: #f5f5f5;
       overflow: hidden;
     }
@@ -40,8 +52,8 @@ require_once __DIR__ . '/includes/db.php';
       align-items: stretch;
     }
     #sidebar {
-      width: 420px;
-      min-width: 320px;
+  width: 320px;
+  min-width: 320px;
       height: 100vh;
       margin: 0;
       box-sizing: border-box;
@@ -62,13 +74,47 @@ require_once __DIR__ . '/includes/db.php';
     .filter-group { margin-bottom: 0px; padding-bottom: 0px; }
     .filter-group label { display: block; margin-bottom: 0px; font-weight: bold; }
     .filter-group label + div { margin-top: 0px !important; padding-top: 0px !important; }
-    #mini-calendar-actual, #mini-calendar-proximo { margin-top: 0px !important; margin-bottom: 0px !important; padding-top: 0px !important; padding-bottom: 0px !important; vertical-align: top; width: 100%; padding: 0 !important; border: none !important; background: none !important; margin-top: -24px !important; margin-bottom: 0px !important; position: relative;}
+    #mini-calendar-actual, #mini-calendar-proximo {
+      margin-top: 0px !important;
+      margin-bottom: 0px !important;
+      padding-top: 0px !important;
+      padding-bottom: 0px !important;
+      vertical-align: top;
+      width: 100%;
+  min-height: 120px;
+  max-height: 150px;
+  width: 95%;
+      padding: 0 !important;
+      border: none !important;
+      background: none !important;
+      margin-top: -12px !important;
+      margin-bottom: 0px !important;
+      position: relative;
+    }
     #mini-calendar-actual .flatpickr-calendar.inline,
-    #mini-calendar-proximo .flatpickr-calendar.inline { width: 100% !important; min-width: 0 !important; margin-bottom: 0px !important; margin-top: 0px !important; box-shadow: 0 2px 8px #0001; background: #fff; border-radius: 8px; border: 1px solid #e0e0e0; }
+    #mini-calendar-actual .flatpickr-calendar.inline,
+    #mini-calendar-proximo .flatpickr-calendar.inline {
+      width: 95% !important;
+      min-width: 120px !important;
+      max-width: 180px !important;
+      min-height: 100px !important;
+      max-height: 140px !important;
+      margin-bottom: 0px !important;
+      margin-top: 0px !important;
+      box-shadow: 0 2px 8px #0001;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      overflow: hidden;
+    }
   </style>
 <body>
   <div id="main-container">
     <div id="sidebar">
+      <div class="filter-group" style="margin-bottom:16px; display: flex; gap: 8px;">
+        <button id="btnVistaLista" class="btn btn-outline-primary" style="flex:1;font-weight:bold;">Vista tipo lista</button>
+        <button id="btnVistaCalendario" class="btn btn-outline-secondary" style="flex:1;font-weight:bold;">Vista calendario</button>
+      </div>
       <div class="filter-group">
         <label for="profesional-select">Modalidad</label>
         <select id="profesional-select" class="form-control">
@@ -408,6 +454,59 @@ require_once __DIR__ . '/includes/db.php';
       var lastDateClickInfo = null;
 
       var calendar = new FullCalendar.Calendar(calendarEl, {
+        eventDidMount: function(info) {
+          var event = info.event;
+          var paciente = event.title.split(' (')[0];
+          var servicio = event.title.split('(')[1]?.replace(')','') || '';
+          var horaInicio = event.start ? event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+          var horaFin = event.end ? event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+          var telefono = event.extendedProps.telefono || '';
+          var diagnostico = event.extendedProps.diagnostico || '';
+          var pago = event.extendedProps.pago || 'No pagado';
+          var tooltip = `
+            <div style='font-family:Roboto,sans-serif;max-width:220px;'>
+              <div style='font-weight:bold;font-size:16px;'>${paciente}</div>
+              <div style='margin-bottom:4px;'>${servicio}</div>
+              <div style='font-size:14px;'><span style='margin-right:6px;'>🕒</span>${horaInicio} - ${horaFin}</div>
+              <div style='font-size:14px;'><span style='margin-right:6px;'>💲</span>${pago}</div>
+              <hr style='margin:6px 0;'>
+              <div style='font-size:14px;'><span style='margin-right:6px;'>📱</span>${telefono}</div>
+              <div style='font-size:14px;'><span style='margin-right:6px;'>💬</span>${diagnostico}</div>
+            </div>
+          `;
+          info.el.setAttribute('title', '');
+          info.el.addEventListener('mouseenter', function(e) {
+            let tip = document.createElement('div');
+            tip.className = 'fc-custom-tooltip';
+            tip.innerHTML = tooltip;
+            tip.style.position = 'absolute';
+            tip.style.zIndex = 99999;
+            tip.style.background = '#fff';
+            tip.style.border = '1px solid #ccc';
+            tip.style.boxShadow = '0 2px 8px rgba(0,0,0,0.13)';
+            tip.style.padding = '12px 16px';
+            tip.style.borderRadius = '8px';
+            tip.style.fontSize = '15px';
+            tip.style.pointerEvents = 'none';
+            tip.style.top = (e.clientY + 12) + 'px';
+            tip.style.left = (e.clientX + 12) + 'px';
+            tip.id = 'fc-tooltip-'+event.id;
+            document.body.appendChild(tip);
+            info.el._fcTooltip = tip;
+          });
+          info.el.addEventListener('mousemove', function(e) {
+            if (info.el._fcTooltip) {
+              info.el._fcTooltip.style.top = (e.clientY + 12) + 'px';
+              info.el._fcTooltip.style.left = (e.clientX + 12) + 'px';
+            }
+          });
+          info.el.addEventListener('mouseleave', function() {
+            if (info.el._fcTooltip) {
+              document.body.removeChild(info.el._fcTooltip);
+              info.el._fcTooltip = null;
+            }
+          });
+        },
         schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
         initialView: 'resourceTimeGridDay',
         locale: 'es',
@@ -418,7 +517,7 @@ require_once __DIR__ . '/includes/db.php';
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
-          right: 'resourceTimeGridDay,resourceTimeGridWeek'
+          right: 'resourceTimeGridDay,listWeek'
         },
         buttonText: {
           today: 'Hoy',
@@ -445,6 +544,21 @@ require_once __DIR__ . '/includes/db.php';
           contextMenu.style.top = info.jsEvent.pageY + 'px';
         },
       });
+      calendar.render();
+      // Botón para vista tipo lista
+      var btnVistaLista = document.getElementById('btnVistaLista');
+      if (btnVistaLista) {
+        btnVistaLista.addEventListener('click', function() {
+          calendar.changeView('listWeek');
+        });
+      }
+      // Botón para volver a vista calendario
+      var btnVistaCalendario = document.getElementById('btnVistaCalendario');
+      if (btnVistaCalendario) {
+        btnVistaCalendario.addEventListener('click', function() {
+          calendar.changeView('resourceTimeGridDay');
+        });
+      }
       calendar.render();
 
       document.getElementById('profesional-select').addEventListener('change', function() {
