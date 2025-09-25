@@ -1,9 +1,22 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 require_once '../includes/db.php';
+require_once '../includes/auth.php';
+
+// Verificar que el usuario esté logueado y tenga permisos
+if (!isset($_SESSION['usuario_id'])) {
+    echo json_encode(["success" => false, "error" => "Sesión no válida"]);
+    exit;
+}
+
+if (!puedeRealizar('cambiar_estados')) {
+    echo json_encode(["success" => false, "error" => "Sin permisos para cambiar estados"]);
+    exit;
+}
 
 $cita_id = $_POST['cita_id'] ?? '';
 $nuevo_estado = $_POST['estado'] ?? '';

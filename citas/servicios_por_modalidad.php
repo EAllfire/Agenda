@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 
 $modalidad_id = isset($_GET['modalidad_id']) ? intval($_GET['modalidad_id']) : 0;
 
+// Consulta para obtener servicios basado en modalidad_id
 $sql = "SELECT id, nombre FROM servicios WHERE modalidad_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $modalidad_id);

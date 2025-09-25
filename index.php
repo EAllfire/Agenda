@@ -1,6 +1,19 @@
 <?php
+session_start();
 require_once __DIR__ . '/includes/db.php';
-// Mensaje de conexión eliminado
+require_once __DIR__ . '/includes/auth.php';
+
+// Verificar que el usuario esté logueado
+verificarSesion();
+
+// Obtener información del usuario actual
+$usuario = obtenerUsuarioActual();
+
+// Verificar permisos de visualización
+if (!puedeRealizar('ver_citas')) {
+    header('Location: login.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -60,6 +73,10 @@ require_once __DIR__ . '/includes/db.php';
   .estado-punto.activo {
     opacity: 1 !important;
   }
+  .estado-punto.sin-permisos {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
   .estado-punto-tooltip {
     position: absolute;
     bottom: 20px;
@@ -92,13 +109,58 @@ require_once __DIR__ . '/includes/db.php';
       background: #f5f5f5;
       overflow: hidden;
     }
+    #header-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: px;
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #header-bar .logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    #header-bar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    #header-bar .user-name {
+      font-weight: 500;
+      color: #333;
+    }
+    #header-bar .btn-logout {
+      background: #dc3545;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #header-bar .btn-logout:hover {
+      background: #c82333;
+    }
     #main-container {
       display: flex;
-      height: 100vh;
+      height: calc(100vh - 60px);
       width: 100vw;
       margin: 0;
       padding: 0;
       align-items: stretch;
+      margin-top: 80px;
     }
     #sidebar {
   width: 320px;
@@ -123,6 +185,9 @@ require_once __DIR__ . '/includes/db.php';
     .filter-group { margin-bottom: 0px; padding-bottom: 0px; }
     .filter-group label { display: block; margin-bottom: 0px; font-weight: bold; }
     .filter-group label + div { margin-top: 0px !important; padding-top: 0px !important; }
+    .tab-button { transition: all 0.3s ease; }
+    .tab-button:hover { background: #f8f9fa !important; }
+    .tab-button.active { color: #28a745; }
     #mini-calendar-actual, #mini-calendar-proximo {
       margin-top: 0px !important;
       margin-bottom: 0px !important;
@@ -158,12 +223,32 @@ require_once __DIR__ . '/includes/db.php';
     }
   </style>
 <body>
+  <!-- Barra superior de usuario -->
+  <div id="header-bar">
+    <div class="logo">
+      <img src="images/logo.png" alt="Hospital Angeles" style="height: 70px; width: auto; margin-bottom: 4px;">
+      <div style="font-size: 16px; font-weight: 600; color: #333; line-height: 1;">Imagenología</div>
+    </div>
+    <div class="user-info">
+      <span class="user-name">
+        <?= htmlspecialchars($usuario['nombre']) ?>
+      </span>
+      <?= getBadgeTipoUsuario($usuario['tipo']) ?>
+      <?php if (puedeRealizar('gestionar_usuarios')): ?>
+        <a href="admin_usuarios.php" class="btn btn-sm btn-outline-secondary" title="Gestionar Usuarios">
+          👥 Admin
+        </a>
+      <?php endif; ?>
+      <button class="btn-logout" onclick="logout()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
+
   <div id="main-container">
     <div id="sidebar">
-      <div class="filter-group" style="margin-bottom:16px; display: flex; gap: 8px;">
-        <button id="btnVistaLista" class="btn btn-outline-primary" style="flex:1;font-weight:bold;">Vista tipo lista</button>
-        <button id="btnVistaCalendario" class="btn btn-outline-secondary" style="flex:1;font-weight:bold;">Vista calendario</button>
-      </div>
+      <?php if (puedeRealizar('crear_citas')): ?>
+      <?php endif; ?>
       <div class="filter-group">
         <label for="profesional-select">Modalidad</label>
         <select id="profesional-select" class="form-control">
@@ -192,112 +277,218 @@ require_once __DIR__ . '/includes/db.php';
     <div id="calendar"></div>
   </div>
   <div id="contextMenu" class="context-menu">
+    <?php if (puedeRealizar('crear_citas')): ?>
     <button id="bloquearBtn">Bloquear</button>
     <button id="agendarBtn">Agendar</button>
+    <?php else: ?>
+    <button disabled style="opacity:0.5;cursor:not-allowed;">Sin permisos para crear citas</button>
+    <?php endif; ?>
   </div>
   <!-- Modal para agendar cita -->
-  <div id="modalAgendar" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:10000;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:24px 32px;border-radius:10px;max-width:400px;width:90%;position:relative;">
-      <button id="cerrarModalAgendar" style="position:absolute;top:8px;right:12px;font-size:20px;background:none;border:none;cursor:pointer;">&times;</button>
-      <h3>Agendar cita</h3>
+  <div id="modalAgendar" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:10000;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;padding:32px 40px;border-radius:12px;max-width:900px;width:100%;position:relative;max-height:90vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      <button id="cerrarModalAgendar" style="position:absolute;top:12px;right:16px;font-size:24px;background:none;border:none;cursor:pointer;color:#666;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='none'">&times;</button>
+      
+      <div style="margin-bottom:24px;">
+        <h3 style="margin:0;font-size:24px;color:#333;font-weight:600;">Agendar Nueva Cita</h3>
+        <p style="margin:8px 0 0 0;color:#666;font-size:14px;">Complete los datos para programar una nueva cita médica</p>
+      </div>
+      
       <form id="formAgendar">
-        <div style="margin-bottom:12px;display:flex;gap:8px;">
-          <div style="flex:1;">
-            <label for="agendarFecha">Fecha:</label>
-            <input type="text" id="agendarFecha" name="fecha" style="width:100%;padding:6px;cursor:pointer;background:#f9f9f9;" autocomplete="off" />
-          </div>
-          <div style="flex:1;">
-            <label for="agendarHoraInicio">Hora inicio:</label>
-            <input type="text" id="agendarHoraInicio" name="hora_inicio" class="form-control timepicker" style="width:100%;padding:6px;cursor:pointer;background:#f9f9f9;" />
+        <!-- Sección: Fecha y Hora -->
+        <div style="margin-bottom:24px;padding:20px;background:#f8f9fa;border-radius:8px;border-left:4px solid #333;">
+          <h4 style="margin:0 0 16px 0;color:#333;font-size:16px;font-weight:600;">Fecha y Horario</h4>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+            <div>
+              <label for="agendarFecha" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Fecha:</label>
+              <input type="text" id="agendarFecha" name="fecha" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;cursor:pointer;transition:border-color 0.2s;" autocomplete="off" />
             </div>
-            <div style="flex:1;">
-              <label for="agendarHoraFin">Hora fin:</label>
-              <input type="text" id="agendarHoraFin" name="hora_fin" class="form-control timepicker" style="width:100%;padding:6px;cursor:pointer;background:#f9f9f9;" />
+            <div>
+              <label for="agendarHoraInicio" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Hora inicio:</label>
+              <input type="text" id="agendarHoraInicio" name="hora_inicio" class="form-control timepicker" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;cursor:pointer;transition:border-color 0.2s;" />
+            </div>
+            <div>
+              <label for="agendarHoraFin" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Hora fin:</label>
+              <input type="text" id="agendarHoraFin" name="hora_fin" class="form-control timepicker" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;cursor:pointer;transition:border-color 0.2s;" />
+            </div>
           </div>
         </div>
-        <!-- Paciente autocompletar y botón registrar -->
-        <div style="margin-bottom:12px;position:relative;">
-          <label for="agendarPaciente">Paciente:</label>
-          <input type="text" id="agendarPaciente" name="paciente" placeholder="Buscar o registrar paciente" autocomplete="off" style="width:100%;padding:6px;" />
-          <div id="pacientesDropdown" style="position:absolute;top:38px;left:0;width:100%;background:#fff;z-index:10001;border:1px solid #ccc;display:none;max-height:180px;overflow-y:auto;"></div>
-          <button type="button" id="btnMostrarRegistroPaciente" style="position:absolute;right:0;top:22px;padding:4px 10px;background:#1976d2;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Agregar</button>
-          <div id="registroPacienteBox" style="display:none;margin-top:10px;padding:12px;background:#f7f7f7;border-radius:6px;box-shadow:0 2px 8px #0001;">
-            <h4 style="margin:0 0 8px 0;font-size:16px;">Registrar paciente</h4>
-            <input type="text" id="nuevoPacienteNombre" placeholder="Nombre" style="width:100%;margin-bottom:6px;padding:6px;" value="Juan">
-            <input type="text" id="nuevoPacienteApellido" placeholder="Apellido" style="width:100%;margin-bottom:6px;padding:6px;" value="Pérez">
-            <input type="text" id="nuevoPacienteTelefono" placeholder="Teléfono" style="width:100%;margin-bottom:6px;padding:6px;" value="625118881">
-            <input type="text" id="nuevoPacienteDiagnostico" placeholder="Diagnóstico o motivo del estudio" style="width:100%;margin-bottom:6px;padding:6px;" value="Fractura de tobillo">
-            <select id="nuevoPacienteTipo" style="width:100%;margin-bottom:6px;padding:6px;">
-              <option value="niño" selected>Niño</option>
-              <option value="adulto">Adulto</option>
-              <option value="IMSS">IMSS</option>
-              <option value="urgencias">Urgencias</option>
-              <option value="externo">Externo</option>
-              <option value="interno">Interno</option>
-            </select>
-            <select id="nuevoPacienteOrigen" style="width:100%;margin-bottom:10px;padding:6px;">
-              <option value="">Origen</option>
-              <option value="urgencias" selected>Urgencias</option>
-              <option value="externo">Externo</option>
-              <option value="interno">Interno</option>
-            </select>
-            <label for="nuevoPacienteCorreo">Correo:</label>
-            <input type="email" id="nuevoPacienteCorreo" placeholder="Correo electrónico" style="width:100%;margin-bottom:6px;padding:6px;" value="juanperez@gmail.com">
-            <label for="nuevoPacienteComentarios">Comentarios adicionales:</label>
-            <textarea id="nuevoPacienteComentarios" placeholder="Comentarios adicionales" style="width:100%;margin-bottom:6px;padding:6px;">Paciente con antecedentes de fractura previa.</textarea>
-            <button type="button" id="btnGuardarPaciente" style="background:#388e3c;color:#fff;padding:6px 16px;border:none;border-radius:4px;cursor:pointer;">Guardar</button>
-            <button type="button" id="btnCancelarPaciente" style="background:#e0e0e0;color:#333;padding:6px 12px;border:none;border-radius:4px;cursor:pointer;margin-left:8px;">Volver</button>
+
+        <!-- Sección: Paciente -->
+        <div style="margin-bottom:24px;padding:20px;background:#f8f9fa;border-radius:8px;border-left:4px solid #333;">
+          <h4 style="margin:0 0 16px 0;color:#333;font-size:16px;font-weight:600;">Información del Paciente</h4>
+          <div style="position:relative;">
+            <label for="agendarPaciente" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Paciente:</label>
+            <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;">
+              <div style="flex:1;position:relative;min-width:300px;">
+                <input type="text" id="agendarPaciente" name="paciente" placeholder="Buscar paciente existente..." autocomplete="off" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;" />
+                <div id="pacientesDropdown" style="position:absolute;top:100%;left:0;width:100%;background:#fff;z-index:10001;border:2px solid #e1e5e9;border-top:none;border-radius:0 0 6px 6px;display:none;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+              </div>
+              <button type="button" id="btnMostrarRegistroPaciente" style="padding:12px 20px;background:#4caf50;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;white-space:nowrap;transition:background 0.2s;min-width:140px;" onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4caf50'">+ Nuevo Paciente</button>
+            </div>
+            
+            <!-- Formulario de registro de paciente -->
+            <div id="registroPacienteBox" style="display:none;margin-top:16px;padding:24px;background:#fff;border-radius:8px;border:2px solid #e8f5e8;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                <h4 style="margin:0;font-size:18px;color:#333;font-weight:600;">Registrar Nuevo Paciente</h4>
+                <button type="button" id="btnCancelarPaciente" style="background:#e0e0e0;color:#666;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;transition:background 0.2s;" onmouseover="this.style.background='#d5d5d5'" onmouseout="this.style.background='#e0e0e0'">Cancelar</button>
+              </div>
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:16px;margin-bottom:16px;">
+                <div>
+                  <label for="nuevoPacienteNombre" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Nombre:</label>
+                  <input type="text" id="nuevoPacienteNombre" placeholder="Nombre del paciente" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;" value="">
+                </div>
+                <div>
+                  <label for="nuevoPacienteApellido" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Apellido:</label>
+                  <input type="text" id="nuevoPacienteApellido" placeholder="Apellido del paciente" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;" value="">
+                </div>
+              </div>
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:16px;margin-bottom:16px;">
+                <div>
+                  <label for="nuevoPacienteTelefono" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Teléfono:</label>
+                  <input type="text" id="nuevoPacienteTelefono" placeholder="Número de teléfono" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;" value="">
+                </div>
+                <div>
+                  <label for="nuevoPacienteCorreo" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Correo electrónico:</label>
+                  <input type="email" id="nuevoPacienteCorreo" placeholder="correo@ejemplo.com" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;" value="">
+                </div>
+              </div>
+              
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:16px;margin-bottom:16px;">
+                <div>
+                  <label for="nuevoPacienteTipo" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Tipo de paciente:</label>
+                  <select id="nuevoPacienteTipo" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;">
+                    <option value="">Seleccionar tipo...</option>
+                    <option value="niño">Niño</option>
+                    <option value="adulto" selected>Adulto</option>
+                    <option value="IMSS">IMSS</option>
+                    <option value="urgencias">Urgencias</option>
+                    <option value="externo">Externo</option>
+                    <option value="interno">Interno</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="nuevoPacienteOrigen" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Origen:</label>
+                  <select id="nuevoPacienteOrigen" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;">
+                    <option value="">Seleccionar origen...</option>
+                    <option value="urgencias">Urgencias</option>
+                    <option value="externo" selected>Externo</option>
+                    <option value="interno">Interno</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div style="margin-bottom:16px;">
+                <label for="nuevoPacienteDiagnostico" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Diagnóstico o motivo:</label>
+                <input type="text" id="nuevoPacienteDiagnostico" placeholder="Diagnóstico o motivo del estudio" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;" value="">
+              </div>
+              
+              <div style="margin-bottom:20px;">
+                <label for="nuevoPacienteComentarios" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Comentarios adicionales:</label>
+                <textarea id="nuevoPacienteComentarios" placeholder="Información adicional sobre el paciente..." style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;resize:vertical;min-height:80px;transition:border-color 0.2s;"></textarea>
+              </div>
+              
+              <div style="display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;">
+                <button type="button" id="btnGuardarPaciente" style="background:#4caf50;color:#fff;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;transition:background 0.2s;" onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4caf50'">💾 Guardar Paciente</button>
+              </div>
+            </div>
           </div>
         </div>
-        <div style="margin-bottom:12px;">
-          <label for="modalidadSeleccionadaLabel">Modalidad:</label>
-          <input type="hidden" id="agendarProfesional" name="profesional" />
-          <span id="modalidadSeleccionadaLabel" style="display:inline-block;padding:6px 12px;background:#f9f9f9;border-radius:4px;border:1px solid #ccc;min-width:120px;">Radiología</span>
+
+        <!-- Sección: Modalidad y Servicio -->
+        <div style="margin-bottom:24px;padding:20px;background:#f8f9fa;border-radius:8px;border-left:4px solid #333;">
+          <h4 style="margin:0 0 16px 0;color:#333;font-size:16px;font-weight:600;">Modalidad y Servicio</h4>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:16px;">
+            <div>
+              <label style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Modalidad:</label>
+              <input type="hidden" id="agendarProfesional" name="profesional" />
+              <div style="padding:12px;background:#fff;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;min-height:20px;display:flex;align-items:center;">
+                <span id="modalidadSeleccionadaLabel" style="color:#666;font-weight:500;">Radiología</span>
+              </div>
+            </div>
+            <div>
+              <label for="agendarServicio" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Servicio:</label>
+              <select id="agendarServicio" name="servicio" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;">
+                <option value="">Primero seleccione una modalidad</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div style="margin-bottom:12px;">
-          <label for="agendarServicio">Servicio:</label>
-          <select id="agendarServicio" name="servicio" style="width:100%;padding:6px;">
-            <option value="1" selected>Radiografía</option>
-            <option value="2">Resonancia Magnética</option>
-          </select>
+
+        <!-- Sección: Estado -->
+        <div style="margin-bottom:24px;padding:20px;background:#f8f9fa;border-radius:8px;border-left:4px solid #333;">
+          <h4 style="margin:0 0 16px 0;color:#333;font-size:16px;font-weight:600;">Estado de la Cita</h4>
+          <div style="max-width:300px;">
+            <label for="agendarEstado" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Estado inicial:</label>
+            <select id="agendarEstado" name="estado_id" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;transition:border-color 0.2s;">
+              <option value="1" selected>Reservado</option>
+              <option value="2">Confirmado</option>
+              <option value="3">Asistió</option>
+              <option value="4">No asistió</option>
+              <option value="5">Pendiente</option>
+              <option value="6">En espera</option>
+            </select>
+          </div>
         </div>
-        <div style="margin-bottom:12px;">
-          <label for="agendarEstado">Estado:</label>
-          <select id="agendarEstado" name="estado_id" style="width:100%;padding:6px;">
-            <option value="1" selected>Reservado</option>
-            <option value="2">Confirmado</option>
-            <option value="3">Asistió</option>
-            <option value="4">No asistió</option>
-            <option value="5">Pendiente</option>
-            <option value="6">En espera</option>
-          </select>
-        </div>
-        <div style="margin-bottom:12px;">
-          <button type="button" id="btnToggleInfoAdicional" style="background:#f9f9f9;color:#222;padding:6px 16px;border:1px solid #ccc;border-radius:4px;cursor:pointer;width:100%;text-align:left;font-weight:bold;display:flex;align-items:center;justify-content:space-between;">
-            <span>Información adicional</span>
-            <span id="iconInfoAdicional" style="font-size:18px;transition:transform 0.2s;">&#9660;</span>
+
+        <!-- Sección: Información Adicional (Colapsible) -->
+        <div style="margin-bottom:32px;padding:20px;background:#f8f9fa;border-radius:8px;border-left:4px solid #333;">
+          <button type="button" id="btnToggleInfoAdicional" style="background:none;border:none;color:#333;padding:0;cursor:pointer;width:100%;text-align:left;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:between;margin-bottom:16px;">
+            <span>Información Adicional</span>
+            <span id="iconInfoAdicional" style="font-size:18px;transition:transform 0.3s;margin-left:auto;">▼</span>
           </button>
-          <div id="infoAdicionalBox" style="display:none;margin-top:10px;">
-            <label for="notaPaciente">Notas compartidas con el paciente:</label>
-            <textarea id="notaPaciente" name="nota_paciente" rows="3" style="width:100%;padding:6px;resize:vertical;" placeholder="Escribe aquí las notas que serán visibles para el paciente...">Recuerde llegar 10 minutos antes de su cita y traer sus estudios previos si los tiene.</textarea>
-            <label for="notaInterna" style="margin-top:10px;display:block;">Nota interna:</label>
-            <textarea id="notaInterna" name="nota_interna" rows="3" style="width:100%;padding:6px;resize:vertical;" placeholder="Escribe aquí la nota interna para uso del personal...">Información interna adicional</textarea>
+          <div id="infoAdicionalBox" style="display:none;">
+            <div style="margin-bottom:16px;">
+              <label for="notaPaciente" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Notas compartidas con el paciente:</label>
+              <textarea id="notaPaciente" name="nota_paciente" rows="3" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;resize:vertical;transition:border-color 0.2s;" placeholder="Información que será visible para el paciente...">Recuerde llegar 10 minutos antes de su cita y traer sus estudios previos si los tiene.</textarea>
+            </div>
+            <div>
+              <label for="notaInterna" style="display:block;margin-bottom:6px;font-weight:500;color:#333;">Nota interna del personal:</label>
+              <textarea id="notaInterna" name="nota_interna" rows="3" style="width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:6px;font-size:14px;resize:vertical;transition:border-color 0.2s;" placeholder="Notas internas para uso del personal médico..."></textarea>
+            </div>
           </div>
         </div>
-        <button type="submit" style="background:#1976d2;color:#fff;padding:8px 18px;border:none;border-radius:4px;cursor:pointer;">Guardar cita</button>
+        
+        <!-- Botones de acción -->
+        <div style="display:flex;justify-content:flex-end;gap:16px;padding-top:20px;border-top:2px solid #e1e5e9;flex-wrap:wrap;">
+          <button type="button" onclick="document.getElementById('modalAgendar').style.display='none'" style="background:#f5f5f5;color:#666;padding:12px 24px;border:2px solid #e1e5e9;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s;" onmouseover="this.style.background='#eeeeee'" onmouseout="this.style.background='#f5f5f5'">Cancelar</button>
+          <button type="submit" style="background:#1976d2;color:#fff;padding:12px 32px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;transition:background 0.2s;box-shadow:0 2px 4px rgba(25,118,210,0.3);" onmouseover="this.style.background='#1565c0'" onmouseout="this.style.background='#1976d2'">Guardar Cita</button>
+        </div>
       </form>
+      
       <script>
         var btnToggle = document.getElementById('btnToggleInfoAdicional');
         var iconToggle = document.getElementById('iconInfoAdicional');
-        btnToggle.onclick = function() {
-          var box = document.getElementById('infoAdicionalBox');
-          var isOpen = (box.style.display === 'block');
-          box.style.display = isOpen ? 'none' : 'block';
-          iconToggle.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-        };
+        if (btnToggle && iconToggle) {
+          btnToggle.onclick = function() {
+            var box = document.getElementById('infoAdicionalBox');
+            var isOpen = (box.style.display === 'block');
+            box.style.display = isOpen ? 'none' : 'block';
+            iconToggle.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            iconToggle.textContent = isOpen ? '▼' : '▲';
+          };
+        }
+        
+        // Mejorar la experiencia de hover en inputs - aplicar después de que el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+          const inputs = document.querySelectorAll('#modalAgendar input, #modalAgendar select, #modalAgendar textarea');
+          inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+              this.style.borderColor = '#1976d2';
+              this.style.boxShadow = '0 0 0 3px rgba(25,118,210,0.1)';
+            });
+            input.addEventListener('blur', function() {
+              this.style.borderColor = '#e1e5e9';
+              this.style.boxShadow = 'none';
+            });
+          });
+        });
       </script>
     </div>
   </div>
+  
   <!-- JS -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
@@ -447,13 +638,25 @@ require_once __DIR__ . '/includes/db.php';
               opt.textContent = servicio.nombre;
               servicioSelect.appendChild(opt);
             });
+          })
+          .catch(error => {
+            console.error('Error cargando servicios:', error);
           });
       }
 
       var modalidadSelect = document.getElementById('profesional-select');
       modalidadSelect.addEventListener('change', function() {
         var modalidadId = modalidadSelect.value;
-        cargarServiciosPorModalidad(modalidadId);
+        
+        // Solo cargar servicios si se selecciona una modalidad específica (no 'todos')
+        if (modalidadId && modalidadId !== 'todos') {
+          cargarServiciosPorModalidad(modalidadId);
+        } else {
+          // Si se selecciona 'todos', limpiar el select de servicios
+          var servicioSelect = document.getElementById('agendarServicio');
+          servicioSelect.innerHTML = '<option value="">Primero seleccione una modalidad</option>';
+        }
+        
         // Filtrar recursos en el calendario
         if (modalidadId === 'todos') {
           calendar.setOption('resources', 'fullcalendar-php-app/public/recursos_json.php');
@@ -528,6 +731,12 @@ require_once __DIR__ . '/includes/db.php';
               evento._hideTimeout = null;
             }
           });
+        }
+        
+        // También cerrar menú contextual si está abierto y el click no es en él
+        var contextMenu = document.getElementById('contextMenu');
+        if (contextMenu && contextMenu.style.display === 'block' && !contextMenu.contains(e.target)) {
+          contextMenu.style.display = 'none';
         }
       });
 
@@ -640,14 +849,20 @@ require_once __DIR__ . '/includes/db.php';
           // Crear puntos de estados
           var estadoPuntos = todosLosEstados.map(estado => {
             var esActual = estadoActual.toLowerCase() === estado.nombre;
-            var claseEstado = esActual ? 'activo' : 'clickeable';
+            var puedeClick = puedeCambiarEstados && !esActual;
+            var claseEstado = esActual ? 'activo' : (puedeClick ? 'clickeable' : 'sin-permisos');
             var border = esActual ? '2px solid #000' : '1px solid #ccc';
+            var cursor = puedeClick ? 'pointer' : 'not-allowed';
+            var opacity = esActual ? '1' : (puedeClick ? '0.6' : '0.3');
+            var tooltipText = esActual ? ' (Actual)' : 
+                            (puedeClick ? ' - Click para cambiar' : ' - Sin permisos');
+            
             return `
               <div class='estado-punto ${claseEstado}' 
                    data-estado='${estado.nombre}'
                    data-cita-id='${event.id}'
-                   style='background-color:${estado.color}; border:${border};'>
-                <div class='estado-punto-tooltip'>${estado.label}${esActual ? ' (Actual)' : ' - Click para cambiar'}</div>
+                   style='background-color:${estado.color}; border:${border}; opacity:${opacity}; cursor:${cursor};'>
+                <div class='estado-punto-tooltip'>${estado.label}${tooltipText}</div>
               </div>
             `;
           }).join('');
@@ -656,8 +871,8 @@ require_once __DIR__ . '/includes/db.php';
             <div style='font-family:Roboto,sans-serif;max-width:260px;'>
               <div style='font-weight:bold;font-size:16px;'>${paciente}</div>
               <div style='margin-bottom:4px;'>${servicio}</div>
-              <div style='font-size:14px;'><span style='margin-right:6px;'>🕒</span>${horaInicio} - ${horaFin}</div>
-              <div style='font-size:14px;'><span style='margin-right:6px;'>💲</span>${pago}</div>
+              <div style='font-size:14px;'>${horaInicio} - ${horaFin}</div>
+              <div style='font-size:14px;'>${pago}</div>
               <div class='estado-puntos'>
                 <span style='font-size:12px; margin-right:8px;'>Estados:</span>
                 ${estadoPuntos}
@@ -720,6 +935,11 @@ require_once __DIR__ . '/includes/db.php';
             // Agregar event listeners para los clicks en los puntos de estado
             tip.addEventListener('click', function(e) {
               if (e.target.classList.contains('estado-punto') && e.target.classList.contains('clickeable')) {
+                if (!puedeCambiarEstados) {
+                  alert('No tiene permisos para cambiar estados de citas.');
+                  return;
+                }
+                
                 var nuevoEstado = e.target.getAttribute('data-estado');
                 var citaId = e.target.getAttribute('data-cita-id');
                 
@@ -770,33 +990,24 @@ require_once __DIR__ . '/includes/db.php';
         height: "100vh",
         selectable: true,
         select: function(info) {
-          lastDateClickInfo = info;
-          contextMenu.style.display = 'block';
-          contextMenu.style.left = info.jsEvent.pageX + 'px';
-          contextMenu.style.top = info.jsEvent.pageY + 'px';
+          // Solo mostrar menú contextual si no hay tooltip activo
+          if (!tooltipActivo) {
+            lastDateClickInfo = info;
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = info.jsEvent.pageX + 'px';
+            contextMenu.style.top = info.jsEvent.pageY + 'px';
+          }
         },
         dateClick: function(info) {
-          lastDateClickInfo = info;
-          contextMenu.style.display = 'block';
-          contextMenu.style.left = info.jsEvent.pageX + 'px';
-          contextMenu.style.top = info.jsEvent.pageY + 'px';
+          // Solo mostrar menú contextual si no hay tooltip activo
+          if (!tooltipActivo) {
+            lastDateClickInfo = info;
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = info.jsEvent.pageX + 'px';
+            contextMenu.style.top = info.jsEvent.pageY + 'px';
+          }
         },
       });
-      calendar.render();
-      // Botón para vista tipo lista
-      var btnVistaLista = document.getElementById('btnVistaLista');
-      if (btnVistaLista) {
-        btnVistaLista.addEventListener('click', function() {
-          calendar.changeView('listWeek');
-        });
-      }
-      // Botón para volver a vista calendario
-      var btnVistaCalendario = document.getElementById('btnVistaCalendario');
-      if (btnVistaCalendario) {
-        btnVistaCalendario.addEventListener('click', function() {
-          calendar.changeView('resourceTimeGridDay');
-        });
-      }
       calendar.render();
 
       document.getElementById('profesional-select').addEventListener('change', function() {
@@ -934,6 +1145,18 @@ require_once __DIR__ . '/includes/db.php';
         });
       };
     });
+
+    // Variables de permisos del usuario actual
+    var puedeEditarCitas = <?= puedeRealizar('editar_citas') ? 'true' : 'false' ?>;
+    var puedeCambiarEstados = <?= puedeRealizar('cambiar_estados') ? 'true' : 'false' ?>;
+    var tipoUsuario = '<?= $usuario['tipo'] ?>';
+
+    // Función para logout
+    function logout() {
+      if (confirm('¿Está seguro que desea cerrar sesión?')) {
+        window.location.href = 'logout.php';
+      }
+    }
   </script>
 </body>
 </html>
