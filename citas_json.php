@@ -1,5 +1,5 @@
 <?php
-require_once("../includes/db.php");
+require_once("includes/db.php");
 
 $sql = "SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, c.modalidad_id, c.estado_id, e.nombre AS estado,
     p.nombre AS paciente, p.tipo AS tipo_paciente, p.telefono, p.diagnostico,
@@ -22,23 +22,30 @@ while ($row = $result->fetch_assoc()) {
   }
     $color = null;
     if (isset($row['estado'])) {
-      if ($row['estado'] === 'reservado') {
-        $color = 'blue';
-      } elseif ($row['estado'] === 'pendiente') {
-        $color = 'orange';
-      } elseif ($row['estado'] === 'confirmado') {
-        $color = 'green';
-      } else {
-        $color = null;
-      }
+      // Mapear estados a colores (mismo mapeo que actualizar_estado.php)
+      $colores_map = [
+          'reservado' => '#2196F3',    // Azul
+          'confirmado' => '#FF9800',   // Naranja
+          'asistió' => '#E91E63',      // Rosa
+          'no asistió' => '#FF7F50',   // Coral
+          'pendiente' => '#F44336',    // Rojo
+          'en espera' => '#4CAF50'     // Verde
+      ];
+      
+      $color = $colores_map[$row['estado']] ?? '#2196F3'; // Por defecto azul
     }
     $eventos[] = [
       'id' => $row['id'],
       'title' => $row['paciente']." (".$row['servicio'].")",
       'start' => $row['fecha']."T".$hora_inicio,
       'end' => $row['fecha']."T".$hora_fin,
-      'resourceId' => $row['servicio_id'],
-      'color' => $color
+      'resourceId' => $row['modalidad_id'],
+      'color' => $color,
+      'estado' => $row['estado'] ?? '',
+      'estado_id' => $row['estado_id'] ?? '',
+      'telefono' => $row['telefono'] ?? '',
+      'diagnostico' => $row['diagnostico'] ?? '',
+      'pago' => 'No especificado'
     ];
 }
 

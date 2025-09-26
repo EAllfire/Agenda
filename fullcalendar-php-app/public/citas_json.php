@@ -4,7 +4,8 @@ header('Content-Type: application/json');
 
 // Tu consulta SQL debe devolver los campos necesarios
 $sql = "SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, c.modalidad_id, c.estado_id, e.nombre AS estado,
-    p.nombre AS paciente, s.nombre AS servicio, s.id AS servicio_id
+    p.nombre AS paciente, p.tipo AS tipo_paciente, p.telefono, p.diagnostico, 
+    s.nombre AS servicio, s.id AS servicio_id
   FROM citas c
   JOIN pacientes p ON c.paciente_id = p.id
   JOIN servicios s ON c.servicio_id = s.id
@@ -44,7 +45,12 @@ while ($row = $result->fetch_assoc()) {
     'resourceId' => $row['modalidad_id'], // El id de la modalidad
     'estado_id' => isset($row['estado_id']) ? $row['estado_id'] : null,
     'estado' => $row['estado'],
-    'color' => $color
+    'color' => $color,
+    'extendedProps' => [
+      'tipo_paciente' => $row['tipo_paciente'] ?? '',
+      'telefono' => $row['telefono'] ?? '',
+      'diagnostico' => $row['diagnostico'] ?? ''
+    ]
   ];
 }
 

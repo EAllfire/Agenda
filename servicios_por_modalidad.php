@@ -1,5 +1,5 @@
 <?php
-require_once("../includes/db.php");
+require_once("includes/db.php");
 header('Content-Type: application/json');
 
 $modalidad_id = isset($_GET['modalidad_id']) ? intval($_GET['modalidad_id']) : 0;

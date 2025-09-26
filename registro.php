@@ -134,7 +134,11 @@ if ($_POST) {
 <body>
     <div class="register-container">
         <div class="register-header">
-            <h2>🏥 Agenda Hospital</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="images/logo.png" alt="Hospital Angeles" style="height: 60px; margin-bottom: 10px;">
+                <h2 style="color: #1f2937; margin: 0;">HOSPITAL ÁNGELES</h2>
+                <p style="color: #6c757d; margin: 5px 0 0 0;">IMAGENOLOGÍA - Sistema de Citas</p>
+            </div>
             <p>Crear Nueva Cuenta</p>
         </div>
         
