@@ -100,6 +100,71 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             gap: 0.5rem;
         }
         
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #1f2937;
+            cursor: pointer;
+        }
+        
+        /* Responsive Header */
+        @media (max-width: 768px) {
+            .main-header {
+                padding: 0 1rem;
+                height: 70px;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .logo-section img {
+                height: 45px;
+            }
+            
+            .logo-text {
+                display: none;
+            }
+            
+            .user-info {
+                gap: 0.5rem;
+                padding: 0.25rem 0.5rem;
+                font-size: 12px;
+            }
+            
+            .header-buttons {
+                gap: 0.25rem;
+            }
+            
+            .btn-header {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 12px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-header {
+                padding: 0 0.5rem;
+                height: 60px;
+            }
+            
+            .logo-section img {
+                height: 35px;
+            }
+            
+            .user-info span:not(.fas) {
+                display: none;
+            }
+            
+            .btn-header {
+                padding: 0.3rem 0.6rem !important;
+                font-size: 11px !important;
+            }
+        }
+
         .btn-header {
             background: #1f2937;
             color: white;
@@ -136,6 +201,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e0 #f1f5f9;
+            transition: transform 0.3s ease-in-out;
         }
         
         .sidebar::-webkit-scrollbar {
@@ -152,6 +218,86 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             border-radius: 3px;
         }
         
+        /* Calendar Area */
+        .calendar-area {
+            flex: 1;
+            padding: 2rem;
+            background: white;
+            overflow-y: auto;
+        }
+        
+        /* Responsive Sidebar */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+                padding: 1rem;
+            }
+            
+            .calendar-area {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-top: 70px;
+                height: calc(100vh - 70px);
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 70px;
+                height: calc(100vh - 70px);
+                width: 300px;
+                z-index: 1040;
+                transform: translateX(-100%);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .calendar-area {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1039;
+                display: none;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                margin-top: 60px;
+                height: calc(100vh - 60px);
+            }
+            
+            .sidebar {
+                top: 60px;
+                height: calc(100vh - 60px);
+                width: 280px;
+                padding: 1rem 0.75rem;
+            }
+            
+            .calendar-area {
+                padding: 0.75rem;
+            }
+        }
+
         .filter-card {
             background: white;
             border-radius: 8px;
@@ -289,6 +435,71 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         
         .fc-scrollgrid {
             background: white !important;
+        }
+        
+        /* Estilos para recursos y modalidades */
+        .fc-resource-area {
+            background: #f8f9fa !important;
+            border-right: 1px solid #dee2e6 !important;
+        }
+        
+        .fc-resource-area-header {
+            background: #e9ecef !important;
+            font-weight: 600 !important;
+            color: #495057 !important;
+        }
+        
+        .fc-datagrid-cell {
+            padding: 8px 12px !important;
+            vertical-align: middle !important;
+        }
+        
+        .fc-resource {
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: #374151 !important;
+            line-height: 1.3 !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: normal !important;
+            max-width: 230px !important;
+            hyphens: auto !important;
+            padding: 4px 0 !important;
+        }
+        
+        .fc-col-header-cell, 
+        .fc-resource-cell {
+            min-width: 250px !important;
+            padding: 8px 12px !important;
+            vertical-align: top !important;
+        }
+        
+        /* Responsive para recursos */
+        @media (max-width: 768px) {
+            .fc-col-header-cell, 
+            .fc-resource-cell {
+                min-width: 180px !important;
+                padding: 4px 8px !important;
+            }
+            
+            .fc-resource {
+                font-size: 12px !important;
+                max-width: 165px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .fc-col-header-cell, 
+            .fc-resource-cell {
+                min-width: 140px !important;
+                padding: 4px 6px !important;
+            }
+            
+            .fc-resource {
+                font-size: 11px !important;
+                max-width: 125px !important;
+                line-height: 1.2 !important;
+            }
         }
         
         .fc-button-primary {
@@ -491,6 +702,10 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
 <body>
     <!-- Header -->
     <header class="main-header">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        
         <div class="logo-section">
             <img src="images/logo.png" alt="Hospital Angeles">
             <div class="logo-text">IMAGENOLOGÍA</div>
@@ -523,6 +738,9 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
     </header>
 
     <!-- Main Content -->
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+    
     <div class="main-content">
         <!-- Sidebar -->
         <div class="sidebar">            
@@ -1427,6 +1645,32 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         locale: 'es',
         resources: 'recursos_json.php',
         events: 'citas_json.php',
+        
+        // Configuración de recursos para evitar solapamiento de nombres
+        resourceAreaWidth: window.innerWidth <= 768 ? '180px' : (window.innerWidth <= 480 ? '140px' : '250px'),
+        resourceAreaColumns: [
+          {
+            field: 'title',
+            headerContent: 'Modalidades',
+            width: window.innerWidth <= 768 ? '180px' : (window.innerWidth <= 480 ? '140px' : '250px')
+          }
+        ],
+        resourceLabelContent: function(arg) {
+          // Mostrar nombres completos sin abreviaciones
+          var title = arg.resource.title;
+          
+          // Crear elemento con mejor formato
+          var element = document.createElement('div');
+          element.textContent = title;
+          element.style.cssText = `
+            line-height: 1.3;
+            padding: 2px 0;
+            word-break: break-word;
+            hyphens: auto;
+          `;
+          
+          return { domNodes: [element] };
+        },
         // ...sin eventDidMount personalizado...
     /* ...sin tooltip personalizado... */
         headerToolbar: {
@@ -1670,6 +1914,42 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         // Aquí iría la lógica para abrir el modal de agendar
         alert('Función de agendar cita en desarrollo');
     }
+    
+    // Funciones para sidebar responsivo
+    function toggleSidebar() {
+      var sidebar = document.querySelector('.sidebar');
+      var overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    }
+    
+    function closeSidebar() {
+      var sidebar = document.querySelector('.sidebar');
+      var overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+    
+    // Cerrar sidebar al hacer clic en enlaces (móvil)
+    document.addEventListener('DOMContentLoaded', function() {
+      var sidebarLinks = document.querySelectorAll('.sidebar a, .sidebar button');
+      sidebarLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+          if (window.innerWidth <= 768) {
+            setTimeout(closeSidebar, 300);
+          }
+        });
+      });
+      
+      // Cerrar sidebar al redimensionar ventana
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+          closeSidebar();
+        }
+      });
+    });
     
     function abrirCatalogo() {
         window.open('catalogo_servicios.php', 'catalogo', 'width=1200,height=800,scrollbars=yes,resizable=yes');
