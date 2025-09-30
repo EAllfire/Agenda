@@ -22,7 +22,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hospital Angeles - Sistema de Citas</title>
+    <title>Hospital Angeles - Sistema de Citas - v9.0 (<?php echo date('H:i:s'); ?>)</title>
     
     <!-- CSS Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -49,50 +49,80 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
 
         /* Header Styles */
         .main-header {
-            background: #ffffff;
+            background: #1275a0;
+            color: white;
             height: 80px;
-            border-bottom: 1px solid #e9ecef;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            font-family: Arial, sans-serif;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1050;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
+            gap: 15px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
         }
         
         .logo-section {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
-            flex-direction: column;
+            text-align: center;
         }
         
-        .logo-section img {
-            height: 60px;
+        .header-logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-logo img {
+            max-height: 60px;
+            margin-left: 10px;
             width: auto;
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1));
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1)) brightness(1.1);
         }
         
         .logo-text {
-            font-size: 14px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-top: 2px;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
             letter-spacing: 0.5px;
+            text-align: center;
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            background: #f8f9fa;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            color: #374151;
+            gap: 8px;
+            color: white;
             font-size: 14px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        .user-type {
+            font-size: 12px;
+            opacity: 0.8;
         }
         
         .header-buttons {
@@ -106,14 +136,14 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             background: none;
             border: none;
             font-size: 1.5rem;
-            color: #1f2937;
+            color: white;
             cursor: pointer;
         }
         
         /* Responsive Header */
         @media (max-width: 768px) {
             .main-header {
-                padding: 0 1rem;
+                padding: 15px;
                 height: 70px;
             }
             
@@ -121,18 +151,26 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
                 display: block;
             }
             
-            .logo-section img {
-                height: 45px;
+            .header-left {
+                gap: 10px;
+            }
+            
+            .header-logo img {
+                max-height: 45px;
             }
             
             .logo-text {
-                display: none;
+                font-size: 18px;
             }
             
             .user-info {
-                gap: 0.5rem;
-                padding: 0.25rem 0.5rem;
+                gap: 4px;
+                padding: 6px 8px;
                 font-size: 12px;
+            }
+            
+            .user-type {
+                display: none;
             }
             
             .header-buttons {
@@ -147,16 +185,28 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         
         @media (max-width: 480px) {
             .main-header {
-                padding: 0 0.5rem;
+                padding: 10px;
                 height: 60px;
             }
             
-            .logo-section img {
-                height: 35px;
+            .header-left {
+                gap: 5px;
+            }
+            
+            .header-logo img {
+                max-height: 35px;
+            }
+            
+            .logo-text {
+                font-size: 16px;
             }
             
             .user-info span:not(.fas) {
                 display: none;
+            }
+            
+            .user-info {
+                padding: 4px 6px;
             }
             
             .btn-header {
@@ -166,23 +216,20 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         }
 
         .btn-header {
-            background: #1f2937;
             color: white;
-            border: 1px solid #374151;
-            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+            background: none;
+            border: none;
             padding: 0.5rem 1rem;
             font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s;
             cursor: pointer;
         }
         
         .btn-header:hover {
-            background: #374151;
-            color: white;
-            text-decoration: none;
-            transform: translateY(-1px);
+            text-decoration: underline;
+            color: #cce7ff;
         }
 
         /* Main Content */
@@ -195,12 +242,12 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         /* Sidebar */
         .sidebar {
             width: 320px;
-            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
-            border-right: 1px solid #e9ecef;
+            background: white;
+            border-right: 1px solid rgba(68, 162, 255, 0.2);
             padding: 1.5rem;
             overflow-y: auto;
             scrollbar-width: thin;
-            scrollbar-color: #cbd5e0 #f1f5f9;
+            scrollbar-color: rgba(68, 162, 255, 0.3) #f1f5f9;
             transition: transform 0.3s ease-in-out;
         }
         
@@ -216,6 +263,73 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         .sidebar::-webkit-scrollbar-thumb {
             background: #cbd5e0;
             border-radius: 3px;
+        }
+        
+        /* Modern Select Styles */
+        select, .form-control select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 40px 10px 12px;
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        select:hover {
+            border-color: #1275a0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #1275a0;
+            box-shadow: 0 0 0 3px rgba(18, 117, 160, 0.1);
+        }
+        
+        select:disabled {
+            background-color: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        /* Form Control Override */
+        .form-control {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 40px 10px 12px;
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-control:hover {
+            border-color: #1275a0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #1275a0;
+            box-shadow: 0 0 0 3px rgba(18, 117, 160, 0.1);
         }
         
         /* Calendar Area */
@@ -296,16 +410,83 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             .calendar-area {
                 padding: 0.75rem;
             }
+            
+            /* Mini calendarios en mobile */
+            .mini-calendar {
+                max-width: 240px !important;
+            }
+            
+            .mini-calendar .flatpickr-calendar {
+                max-width: 240px !important;
+            }
+            
+            .mini-calendar .flatpickr-calendar .flatpickr-day {
+                width: 30px !important;
+                max-width: 30px !important;
+                height: 30px !important;
+                line-height: 30px !important;
+                font-size: 11px !important;
+            }
         }
 
         .filter-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            transition: all 0.2s;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(18, 117, 160, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Contenedor unificado para todos los controles */
+        .unified-controls {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(18, 117, 160, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-section {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-section::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(18, 117, 160, 0.2) 20%, rgba(18, 117, 160, 0.2) 80%, transparent 100%);
+        }
+        
+        .control-section:last-child::after {
+            display: none;
+        }
+        
+        .control-title {
+            color: #1275a0;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-title i {
+            font-size: 16px;
+            color: #1275a0;
         }
         
         .filter-card:hover {
@@ -350,70 +531,189 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
 
         /* Mini Calendarios */
         .mini-calendar {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            margin: 0;
+            width: 100%;
+            max-width: 270px; /* Ajustar al ancho de la sidebar menos padding */
         }
         
         .mini-calendar .flatpickr-calendar {
             position: static !important;
             width: 100% !important;
+            max-width: 270px !important;
             box-shadow: none !important;
             border: none !important;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: transparent !important;
+            backdrop-filter: none;
+            margin: 0 !important;
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-months {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 8px 8px 0 0;
+            background: transparent !important;
+            border-radius: 0;
+            padding: 8px 0;
+            margin-bottom: 8px;
+        }
+        
+        /* Estilo moderno para el select de meses en Flatpickr */
+        .mini-calendar .flatpickr-monthDropdown-months {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            background: white !important;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 8px center !important;
+            background-size: 12px !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 6px !important;
+            padding: 6px 25px 6px 10px !important;
+            font-size: 13px !important;
+            color: #374151 !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        .mini-calendar .flatpickr-monthDropdown-months:hover {
+            border-color: #1275a0 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .mini-calendar .flatpickr-monthDropdown-months:focus {
+            outline: none !important;
+            border-color: #1275a0 !important;
+            box-shadow: 0 0 0 2px rgba(18, 117, 160, 0.1) !important;
+        }
+        
+        /* Estilo moderno para el input de años en Flatpickr */
+        .mini-calendar .numInput.flatpickr-year {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            background: white !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            font-size: 13px !important;
+            color: #374151 !important;
+            transition: all 0.2s ease !important;
+            width: 60px !important;
+            text-align: center !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        .mini-calendar .numInput.flatpickr-year:hover {
+            border-color: #1275a0 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .mini-calendar .numInput.flatpickr-year:focus {
+            outline: none !important;
+            border-color: #1275a0 !important;
+            box-shadow: 0 0 0 2px rgba(18, 117, 160, 0.1) !important;
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-weekdays {
-            background: #f8f9fa;
+            background: transparent !important;
+            margin-bottom: 4px;
+        }
+        
+        .mini-calendar .flatpickr-calendar .flatpickr-weekday {
+            background: transparent !important;
+            color: #6b7280 !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            padding: 4px 0 !important;
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-days {
             width: 100% !important;
+            max-width: 270px !important;
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-day {
-            width: 14.28% !important;
-            max-width: 14.28% !important;
-            flex: 0 0 14.28% !important;
-            height: 32px;
-            line-height: 32px;
-            margin: 0;
+            width: 35px !important;
+            max-width: 35px !important;
+            height: 35px !important;
+            line-height: 35px !important;
+            margin: 1px !important;
             color: #374151;
-            border-radius: 4px;
-            font-size: 13px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 400;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-day:hover {
-            background: #f3f4f6;
-            color: #1f2937;
-            transform: scale(1.05);
+            background: #f3f4f6 !important;
+            color: #1f2937 !important;
+            transform: scale(1.1);
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-day.today {
-            background: white;
-            color: #1f2937;
-            border: 2px solid rgba(31, 41, 55, 0.3);
-            font-weight: 500;
+            background: #e5f3ff !important;
+            color: #1275a0 !important;
+            border: 2px solid #1275a0 !important;
+            font-weight: 600;
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-day.selected {
-            background: #1f2937;
-            color: white;
-            font-weight: 500;
+            background: #1275a0 !important;
+            color: white !important;
+            font-weight: 600 !important;
         }
 
         .mini-calendar .flatpickr-calendar .flatpickr-day.selected:hover {
-            background: #374151;
-            transform: scale(1.05);
+            background: #0f5f85 !important;
+            transform: scale(1.1);
+        }
+        
+        .mini-calendar .flatpickr-calendar .flatpickr-day.nextMonthDay,
+        .mini-calendar .flatpickr-calendar .flatpickr-day.prevMonthDay {
+            color: #d1d5db !important;
+        }
+        
+        .mini-calendar .flatpickr-calendar .flatpickr-day.disabled {
+            color: #d1d5db !important;
+            cursor: not-allowed !important;
+        }
+        
+        /* Ajustar títulos de los mini calendarios */
+        .filter-card h5 {
+            color: #374151;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        /* Línea de tiempo actual personalizada */
+        .fc-timegrid-now-indicator-line {
+            border-color: #dc3545 !important;
+            border-width: 2px !important;
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.3) !important;
+        }
+        
+        .fc-timegrid-now-indicator-arrow {
+            border-left-color: #dc3545 !important;
+            border-right-color: #dc3545 !important;
+        }
+        
+        /* Mejorar visibilidad de la línea de tiempo */
+        .fc-timegrid-slot {
+            position: relative;
+        }
+        
+        .fc-timegrid-now-indicator-container {
+            z-index: 100 !important;
         }
 
         /* FullCalendar Customizations */
@@ -503,8 +803,8 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         }
         
         .fc-button-primary {
-            background: #1f2937 !important;
-            border-color: #374151 !important;
+            background: #1275a0 !important;
+            border-color: #0f5e85 !important;
             color: white !important;
             border-radius: 6px !important;
             font-weight: 500 !important;
@@ -512,8 +812,8 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         }
         
         .fc-button-primary:hover {
-            background: #374151 !important;
-            border-color: #4b5563 !important;
+            background: #0f5e85 !important;
+            border-color: #0c4a6b !important;
         }
         
         .fc-event {
@@ -633,28 +933,91 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         /* Context Menu */
         .context-menu { 
             position: absolute; 
-            background: #fff; 
-            border: 1px solid #ccc; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+            background: white;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             z-index: 9999; 
             padding: 8px 0; 
-            border-radius: 6px; 
-            min-width: 120px; 
-            display: none; 
+            border-radius: 12px;
+            min-width: 140px; 
+            display: none;
+            font-family: Inter, sans-serif;
         }
         
         .context-menu button { 
             width: 100%; 
             background: none; 
             border: none; 
-            padding: 8px 16px; 
+            padding: 12px 16px; 
             text-align: left; 
             cursor: pointer; 
-            font-size: 15px; 
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
         
         .context-menu button:hover { 
-            background: #f0f0f0; 
+            background: #f3f4f6;
+            color: #1275a0;
+        }
+        
+        .context-menu button:first-child {
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .context-menu button:last-child {
+            border-radius: 0 0 12px 12px;
+        }
+        
+        /* Estilos para los puntos de estado en el tooltip */
+        .estado-puntos {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin: 8px 0;
+        }
+        
+        .estado-punto {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .estado-punto.clickeable:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .estado-punto.activo {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(18, 117, 160, 0.3);
+        }
+        
+        .estado-punto-tooltip {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 10000;
+        }
+        
+        .estado-punto:hover .estado-punto-tooltip {
+            opacity: 1;
         }
 
         /* Action Buttons */
@@ -665,7 +1028,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         }
         
         .btn-action {
-            background: #1f2937;
+            background: #1275a0;
             color: white;
             border: none;
             border-radius: 6px;
@@ -677,7 +1040,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         }
         
         .btn-action:hover {
-            background: #374151;
+            background: #0f5e85;
             transform: translateY(-1px);
         }
 
@@ -702,38 +1065,48 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
 <body>
     <!-- Header -->
     <header class="main-header">
-        <button class="mobile-menu-btn" onclick="toggleSidebar()">
-            <i class="fas fa-bars"></i>
-        </button>
+        <div class="header-left">
+            <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="header-logo">
+                <img src="https://angelescuauhtemoc.com/wp-content/uploads/2020/09/logo-50-300x187.png" alt="Hospital Angeles">
+            </div>
+            
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span><?php echo htmlspecialchars($user_nombre); ?></span>
+                <span class="user-type">(<?php echo ucfirst($user_tipo); ?>)</span>
+            </div>
+        </div>
         
         <div class="logo-section">
-            <img src="images/logo.png" alt="Hospital Angeles">
             <div class="logo-text">IMAGENOLOGÍA</div>
         </div>
         
-        <div class="user-info">
-            <i class="fas fa-user-circle"></i>
-            <span><?php echo htmlspecialchars($user_nombre); ?></span>
-            <span class="badge badge-secondary"><?php echo ucfirst($user_tipo); ?></span>
-        </div>
-        
-        <div class="header-buttons">
-            <?php if ($puede_gestionar_usuarios): ?>
-                <a href="admin_usuarios.php" class="btn-header">
-                    <i class="fas fa-users-cog"></i> Admin
+        <div class="header-right">
+            <div class="header-buttons">
+                <?php if ($puede_gestionar_usuarios): ?>
+                    <a href="admin_usuarios.php" class="btn-header">
+                        <i class="fas fa-users-cog"></i> Admin
+                    </a>
+                    <button onclick="abrirCatalogo()" class="btn-header">
+                        <i class="fas fa-list"></i> Catálogo
+                    </button>
+                <?php endif; ?>
+                <a href="cliente.php" class="btn-header">
+                    <i class="fas fa-user-friends"></i> Vista Cliente
                 </a>
-                <button onclick="abrirCatalogo()" class="btn-header">
-                    <i class="fas fa-list"></i> Catálogo
-                </button>
-            <?php endif; ?>
-            <?php if ($puede_crear_citas): ?>
-                <button onclick="abrirModalAgendar()" class="btn-header">
-                    <i class="fas fa-plus"></i> Nueva Cita
-                </button>
-            <?php endif; ?>
-            <a href="logout.php" class="btn-header">
-                <i class="fas fa-sign-out-alt"></i> Salir
-            </a>
+                <?php if ($puede_crear_citas): ?>
+                    <button onclick="abrirModalAgendar()" class="btn-header">
+                        <i class="fas fa-plus"></i> Nueva Cita
+                    </button>
+                <?php endif; ?>
+                <a href="logout.php" class="btn-header">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
         </div>
     </header>
 
@@ -744,30 +1117,47 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
     <div class="main-content">
         <!-- Sidebar -->
         <div class="sidebar">            
-            <!-- Filtros -->
-            <div class="filter-card">
-                <h5>Modalidad</h5>
-                <select id="profesional-select" class="form-control">
-                    <option value="">Todos</option>
-                </select>
-            </div>
-            
-            <div class="filter-card">
-                <h5>Estado</h5>
-                <select id="estado-select" class="form-control">
-                    <option value="">Todos</option>
-                </select>
-            </div>
-            
-            <!-- Mini Calendarios -->
-            <div class="filter-card">
-                <h5>Mes Actual</h5>
-                <div id="mini-calendar-actual" class="mini-calendar"></div>
-            </div>
-            
-            <div class="filter-card">
-                <h5>Próximo Mes</h5>
-                <div id="mini-calendar-proximo" class="mini-calendar"></div>
+            <!-- Controles Unificados -->
+            <div class="unified-controls">
+                <!-- Modalidad -->
+                <div class="control-section">
+                    <h5 class="control-title">
+                        <i class="fas fa-layer-group"></i>
+                        Modalidad
+                    </h5>
+                    <select id="profesional-select" class="form-control">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                
+                <!-- Estado -->
+                <div class="control-section">
+                    <h5 class="control-title">
+                        <i class="fas fa-check-circle"></i>
+                        Estado
+                    </h5>
+                    <select id="estado-select" class="form-control">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                
+                <!-- Mes Actual -->
+                <div class="control-section">
+                    <h5 class="control-title">
+                        <i class="fas fa-calendar-day"></i>
+                        Mes Actual
+                    </h5>
+                    <div id="mini-calendar-actual" class="mini-calendar"></div>
+                </div>
+                
+                <!-- Próximo Mes -->
+                <div class="control-section">
+                    <h5 class="control-title">
+                        <i class="fas fa-calendar-plus"></i>
+                        Próximo Mes
+                    </h5>
+                    <div id="mini-calendar-proximo" class="mini-calendar"></div>
+                </div>
             </div>
         </div>
 
@@ -785,7 +1175,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
   <div id="modalAgendar" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
     <div style="background:#fff;border-radius:12px;max-width:800px;width:95%;margin:20px;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
       <!-- Header del modal -->
-      <div style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%);color:white;padding:20px 32px;border-radius:12px 12px 0 0;position:relative;">
+      <div style="background: #1275a0;color:white;padding:20px 32px;border-radius:12px 12px 0 0;position:relative;">
         <h3 style="margin:0;font-size:24px;font-weight:600;">
           <i class="fas fa-calendar-plus" style="margin-right:10px;"></i>
           Agendar Nueva Cita
@@ -1005,7 +1395,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
                 Cancelar
               </button>
               <button type="submit" 
-                      style="background:#1976d2;color:#fff;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-weight:500;font-size:14px;">
+                      style="background:#1275a0;color:#fff;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-weight:500;font-size:14px;">
                 <i class="fas fa-calendar-check" style="margin-right:6px;"></i>
                 Guardar Cita
               </button>
@@ -1382,6 +1772,14 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
 
       // Event listener global para cerrar tooltip al hacer click fuera
       document.addEventListener('click', function(e) {
+        // Cerrar menú contextual si se hace click fuera
+        if (contextMenu.style.display === 'block') {
+          if (!contextMenu.contains(e.target)) {
+            contextMenu.style.display = 'none';
+          }
+        }
+        
+        // Cerrar tooltip si se hace click fuera
         if (tooltipActivo && !tooltipActivo.contains(e.target) && !e.target.closest('.fc-event')) {
           // Verificar si el click es en un punto de estado (no cerrar en ese caso)
           if (e.target.classList.contains('estado-punto') || e.target.closest('.estado-punto')) {
@@ -1548,18 +1946,18 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
           }).join('');
           
           var tooltip = `
-            <div style='font-family:Roboto,sans-serif;max-width:260px;'>
-              <div style='font-weight:bold;font-size:16px;'>${paciente}</div>
-              <div style='margin-bottom:4px;'>${servicio}</div>
-              <div style='font-size:14px;'><span style='margin-right:6px;'>🕒</span>${horaInicio} - ${horaFin}</div>
-              <div style='font-size:14px;'><span style='margin-right:6px;'>💲</span>${pago}</div>
-              <div class='estado-puntos'>
-                <span style='font-size:12px; margin-right:8px;'>Estados:</span>
+            <div style='font-family:Inter,sans-serif;max-width:280px;background:white;'>
+              <div style='font-weight:bold;font-size:16px;color:#1275a0;margin-bottom:8px;'>${paciente}</div>
+              <div style='margin-bottom:6px;color:#374151;font-weight:500;'>${servicio}</div>
+              <div style='font-size:14px;color:#6b7280;margin-bottom:4px;'><span style='margin-right:8px;'>🕒</span>${horaInicio} - ${horaFin}</div>
+              <div style='font-size:14px;color:#6b7280;margin-bottom:4px;'><span style='margin-right:8px;'>💲</span>${pago}</div>
+              <div class='estado-puntos' style='margin:8px 0;'>
+                <span style='font-size:12px; margin-right:8px; color:#374151; font-weight:600;'>Estados:</span>
                 ${estadoPuntos}
               </div>
-              <hr style='margin:6px 0;'>
-              <div style='font-size:14px;'><span style='margin-right:6px;'>📱</span>${telefono}</div>
-              <div style='font-size:14px;'><span style='margin-right:6px;'>💬</span>${diagnostico}</div>
+              <hr style='margin:8px 0; border:none; border-top:1px solid #e5e7eb;'>
+              <div style='font-size:14px;color:#6b7280;margin-bottom:4px;'><span style='margin-right:8px;'>📱</span>${telefono}</div>
+              <div style='font-size:14px;color:#6b7280;'><span style='margin-right:8px;'>💬</span>${diagnostico}</div>
             </div>
           `;
           info.el.setAttribute('title', '');
@@ -1578,17 +1976,21 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             let tip = document.createElement('div');
             tip.className = 'fc-custom-tooltip';
             tip.innerHTML = tooltip;
-            tip.style.position = 'absolute';
-            tip.style.zIndex = 99999;
-            tip.style.background = '#fff';
-            tip.style.border = '1px solid #ccc';
-            tip.style.boxShadow = '0 2px 8px rgba(0,0,0,0.13)';
-            tip.style.padding = '12px 16px';
-            tip.style.borderRadius = '8px';
-            tip.style.fontSize = '15px';
-            tip.style.pointerEvents = 'auto';
-            tip.style.top = (e.clientY + 12) + 'px';
-            tip.style.left = (e.clientX + 12) + 'px';
+            tip.style.cssText = `
+              position: absolute;
+              z-index: 99999;
+              background: white;
+              border: 1px solid #d1d5db;
+              box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+              padding: 16px;
+              border-radius: 12px;
+              font-size: 14px;
+              pointer-events: auto;
+              max-width: 300px;
+              font-family: Inter, sans-serif;
+            `;
+            tip.style.top = (e.clientY + 15) + 'px';
+            tip.style.left = (e.clientX + 15) + 'px';
             tip.id = 'fc-tooltip-'+event.id;
             document.body.appendChild(tip);
             info.el._fcTooltip = tip;
@@ -1688,6 +2090,9 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         },
         slotMinTime: "07:00:00",
         slotMaxTime: "23:59:00",
+        slotDuration: "00:30:00",
+        allDaySlot: false, // Quitar la fila de All Day
+        nowIndicator: true, // Mostrar línea de tiempo actual
         height: "100vh",
         selectable: true,
         select: function(info) {
@@ -1725,6 +2130,22 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         });
       }
       calendar.render();
+      
+      // Función para actualizar la línea de tiempo actual
+      function actualizarLineaTiempo() {
+        // Forzar actualización del indicador de tiempo actual
+        if (calendar.view.type.includes('timeGrid')) {
+          calendar.render(); // Re-render para actualizar la posición de la línea
+        }
+      }
+      
+      // Actualizar la línea de tiempo cada minuto
+      setInterval(actualizarLineaTiempo, 60000); // 60000 ms = 1 minuto
+      
+      // También actualizar cuando cambie la vista o se refresque el calendario
+      calendar.on('viewDidMount', function() {
+        setTimeout(actualizarLineaTiempo, 100);
+      });
 
       document.getElementById('profesional-select').addEventListener('change', function() {
         calendar.refetchEvents();
@@ -1952,7 +2373,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
     });
     
     function abrirCatalogo() {
-        window.open('catalogo_servicios.php', 'catalogo', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+        window.location.href = 'catalogo_servicios.php';
     }
   </script>
 

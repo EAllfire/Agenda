@@ -1109,7 +1109,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         }
         
         function abrirCatalogo() {
-            window.open('catalogo_servicios.php', 'catalogo', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+            window.location.href = 'catalogo_servicios.php';
         }
 
         // Limpiar modal cuando se abre

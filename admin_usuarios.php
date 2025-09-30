@@ -9,6 +9,10 @@ if (!puedeRealizar('gestionar_usuarios')) {
     exit;
 }
 
+// Obtener información del usuario actual para el header
+$user_nombre = $_SESSION['usuario_nombre'] ?? 'Usuario';
+$user_tipo = $_SESSION['usuario_tipo'] ?? 'usuario';
+
 $error = '';
 $success = '';
 
@@ -129,53 +133,104 @@ while ($row = $result->fetch_assoc()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Usuarios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { 
             background: #f8f9fa; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding-top: 95px;
+            padding-top: 100px;
         }
         
-        .header {
+        /* Header Styles - Same as index.php */
+        .main-header {
+            background: #1275a0;
+            color: white;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            font-family: Arial, sans-serif;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: #ffffff;
-            padding: 1rem;
-            border-bottom: 1px solid #e9ecef;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
+            z-index: 1050;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
         }
         
-        .header-content {
+        .header-left {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
+            gap: 15px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
         }
         
         .logo-section {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
+            flex-direction: column;
+            text-align: center;
         }
         
-        .logo-section img {
-            height: 50px;
-            margin-right: 15px;
+        .header-logo img {
+            max-height: 60px;
+            margin-left: 10px;
+            width: auto;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1)) brightness(1.1);
         }
         
         .logo-text {
-            color: #1f2937;
-            font-size: 1.5rem;
-            font-weight: 600;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            letter-spacing: 0.5px;
+            text-align: center;
         }
         
         .user-info {
-            color: #6c757d;
-            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        .user-type {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .btn-header {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .btn-header:hover {
+            text-decoration: underline;
+            color: #cce7ff;
         }
         
         .admin-container { max-width: 1000px; margin: 20px auto; padding: 20px; }
@@ -187,24 +242,113 @@ while ($row = $result->fetch_assoc()) {
         .btn-sm { padding: 4px 8px; font-size: 12px; }
         .modal-header.bg-warning { background: #ffc107 !important; color: #000; }
         .modal-header.bg-danger { background: #dc3545 !important; color: #fff; }
+        
+        /* Modern Select Styles */
+        select, .form-control select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 40px 10px 12px;
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        select:hover {
+            border-color: #1275a0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #1275a0;
+            box-shadow: 0 0 0 3px rgba(18, 117, 160, 0.1);
+        }
+        
+        select:disabled {
+            background-color: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        /* Form Control Override */
+        .form-control {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 40px 10px 12px;
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-control:hover {
+            border-color: #1275a0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #1275a0;
+            box-shadow: 0 0 0 3px rgba(18, 117, 160, 0.1);
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <div class="logo-section">
-                <img src="images/logo.png" alt="Hospital Angeles">
-                <div>
-                    <div class="logo-text">HOSPITAL ÁNGELES</div>
-                    <small style="color: #6c757d;">IMAGENOLOGÍA - Administración de Usuarios</small>
-                </div>
+    <header class="main-header">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="https://angelescuauhtemoc.com/wp-content/uploads/2020/09/logo-50-300x187.png" alt="Hospital Angeles">
             </div>
+            
             <div class="user-info">
-                Administrador: <strong><?= htmlspecialchars($_SESSION['usuario_nombre']) ?></strong>
+                <i class="fas fa-user-circle"></i>
+                <span><?php echo htmlspecialchars($user_nombre); ?></span>
+                <span class="user-type">(<?php echo ucfirst($user_tipo); ?>)</span>
             </div>
         </div>
-    </div>
+        
+        <div class="logo-section">
+            <div class="logo-text">IMAGENOLOGÍA</div>
+        </div>
+        
+        <div class="header-right">
+            <div class="header-buttons">
+                <a href="index.php" class="btn-header">
+                    <i class="fas fa-calendar"></i> Calendario
+                </a>
+                <a href="catalogo_servicios.php" class="btn-header">
+                    <i class="fas fa-list"></i> Catálogo
+                </a>
+                <a href="cliente.php" class="btn-header">
+                    <i class="fas fa-user-friends"></i> Vista Cliente
+                </a>
+                <a href="logout.php" class="btn-header">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
 
     <div class="admin-container">
         <div class="back-btn">

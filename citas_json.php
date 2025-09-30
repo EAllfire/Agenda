@@ -45,6 +45,7 @@ while ($row = $result->fetch_assoc()) {
       'estado_id' => $row['estado_id'] ?? '',
       'telefono' => $row['telefono'] ?? '',
       'diagnostico' => $row['diagnostico'] ?? '',
+      'tipo_paciente' => $row['tipo_paciente'] ?? '',
       'pago' => 'No especificado'
     ];
 }
