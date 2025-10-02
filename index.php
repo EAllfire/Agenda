@@ -27,10 +27,10 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
     <!-- CSS Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- FULLCALENDAR CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/index.global.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.8/index.global.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timegrid@6.1.8/index.global.min.css" rel="stylesheet">
+    <!-- FULLCALENDAR CSS LOCAL -->
+    <link href="fullcalendar-php-app/assets/css/core.css" rel="stylesheet">
+    <link href="fullcalendar-php-app/assets/css/timegrid.css" rel="stylesheet">
+    <link href="fullcalendar-php-app/assets/css/resource-timegrid.css" rel="stylesheet">
     <!-- Flatpickr CSS -->
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -749,6 +749,47 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             color: #495057 !important;
         }
         
+        /* Mejorar detección de clics en eventos */
+        .fc-event {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            z-index: 100 !important; /* Mayor que el indicador now */
+            position: relative !important;
+        }
+        
+        .fc-event-main {
+            pointer-events: auto !important;
+            z-index: inherit !important;
+        }
+        
+        .fc-event-title {
+            pointer-events: none !important;
+        }
+        
+        .fc-event-time {
+            pointer-events: none !important;
+        }
+        
+        /* Asegurar que los eventos sean clickeables en todas las vistas */
+        .fc-timegrid-event {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            z-index: 100 !important;
+            position: relative !important;
+        }
+        
+        .fc-timegrid-event .fc-event-main {
+            pointer-events: auto !important;
+            z-index: inherit !important;
+        }
+        
+        /* Reducir z-index del indicador now para que no interfiera */
+        .fc-timegrid-now-indicator-line,
+        .fc-timegrid-now-indicator-container {
+            z-index: 50 !important;
+            pointer-events: none !important;
+        }
+        
         .fc-datagrid-cell {
             padding: 8px 12px !important;
             vertical-align: middle !important;
@@ -1325,7 +1366,7 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
             
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
               <div>
-                <label for="modalidadSeleccionadaLabel" style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Modalidad:</label>
+                <label style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Modalidad:</label>
                 <input type="hidden" id="agendarProfesional" name="profesional" />
                 <div id="modalidadSeleccionadaLabel" style="display:block;padding:10px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#6b7280;">
                   Seleccionar modalidad
@@ -1405,6 +1446,105 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
       </div>
     </div>
   </div>
+
+  <!-- Modal para Editar Cita -->
+  <div id="modalEditarCita" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
+    <div style="background:#fff;border-radius:12px;max-width:800px;width:95%;margin:20px;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      <!-- Header del modal -->
+      <div style="background: #1275a0;color:white;padding:20px 32px;border-radius:12px 12px 0 0;position:relative;">
+        <h3 style="margin:0;font-size:24px;font-weight:600;">
+          <i class="fas fa-edit" style="margin-right:10px;"></i>
+          Editar Cita
+        </h3>
+        <button id="cerrarModalEditarCita" style="position:absolute;top:15px;right:20px;font-size:24px;background:none;border:none;cursor:pointer;color:white;opacity:0.8;padding:5px;">&times;</button>
+      </div>
+
+      <!-- Contenido del modal -->
+      <div style="padding:0;">
+        <form id="formEditarCita">
+          <!-- Información de la cita actual -->
+          <div style="padding:24px 32px;border-bottom:1px solid #e5e7eb;background:#f8f9fa;">
+            <h4 style="margin:0 0 16px 0;color:#374151;font-size:18px;font-weight:600;">
+              <i class="fas fa-info-circle" style="margin-right:8px;color:#6b7280;"></i>
+              Información Actual
+            </h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <label style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Paciente:</label>
+                <div id="editarPacienteNombre" style="padding:10px 12px;background:#ffffff;border:1px solid #d1d5db;border-radius:6px;font-size:14px;"></div>
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Servicio:</label>
+                <div id="editarServicioNombre" style="padding:10px 12px;background:#ffffff;border:1px solid #d1d5db;border-radius:6px;font-size:14px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección de Fecha y Tiempo -->
+          <div style="padding:24px 32px;border-bottom:1px solid #e5e7eb;">
+            <h4 style="margin:0 0 16px 0;color:#374151;font-size:18px;font-weight:600;">
+              <i class="fas fa-clock" style="margin-right:8px;color:#6b7280;"></i>
+              Fecha y Horario
+            </h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+              <div>
+                <label for="editarFecha" style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Fecha:</label>
+                <input type="date" id="editarFecha" name="fecha" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;" />
+              </div>
+              <div>
+                <label for="editarHoraInicio" style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Hora Inicio:</label>
+                <input type="time" id="editarHoraInicio" name="hora_inicio" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;" />
+              </div>
+              <div>
+                <label for="editarHoraFin" style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Hora Fin:</label>
+                <input type="time" id="editarHoraFin" name="hora_fin" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado de la cita -->
+          <div style="padding:24px 32px;border-bottom:1px solid #e5e7eb;">
+            <h4 style="margin:0 0 16px 0;color:#374151;font-size:18px;font-weight:600;">
+              <i class="fas fa-check-circle" style="margin-right:8px;color:#6b7280;"></i>
+              Estado de la Cita
+            </h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <label for="editarEstado" style="display:block;margin-bottom:6px;font-weight:500;color:#374151;">Estado:</label>
+                <select id="editarEstado" name="estado_id" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;">
+                  <option value="1">Reservado</option>
+                  <option value="2">Confirmado</option>
+                  <option value="3">Asistió</option>
+                  <option value="4">No asistió</option>
+                  <option value="5">Pendiente</option>
+                  <option value="6">En espera</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones del modal -->
+          <div style="padding:24px 32px;display:flex;gap:12px;justify-content:flex-end;background:#f8f9fa;">
+            <button type="button" id="eliminarCitaBtn" style="background:#dc3545;color:white;border:none;padding:12px 24px;border-radius:6px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-trash"></i>
+              Eliminar Cita
+            </button>
+            <button type="button" onclick="document.getElementById('modalEditarCita').style.display='none'" style="background:#6c757d;color:white;border:none;padding:12px 24px;border-radius:6px;font-weight:500;cursor:pointer;">
+              Cancelar
+            </button>
+            <button type="submit" style="background:#1275a0;color:white;border:none;padding:12px 24px;border-radius:6px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-save"></i>
+              Guardar Cambios
+            </button>
+          </div>
+          
+          <!-- Campo oculto para ID de la cita -->
+          <input type="hidden" id="editarCitaId" name="cita_id" />
+        </form>
+      </div>
+    </div>
+  </div>
+  
   <!-- JS -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
@@ -1900,6 +2040,41 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
 
       var calendar = new FullCalendar.Calendar(calendarEl, {
         eventDidMount: function(info) {
+
+          
+          // Asegurar que el evento sea clickeable y esté por encima de otros elementos
+          info.el.style.cursor = 'pointer';
+          info.el.style.pointerEvents = 'auto';
+          info.el.style.zIndex = '100';
+          info.el.style.position = 'relative';
+          
+          // PRIORIDAD: Event listener para clic (editar cita) - SIMPLIFICADO
+          info.el.addEventListener('click', function(e) {
+
+            
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Cerrar tooltip si existe
+            if (info.el._fcTooltip && tooltipActivo === info.el._fcTooltip) {
+              document.body.removeChild(info.el._fcTooltip);
+              info.el._fcTooltip = null;
+              tooltipActivo = null;
+            }
+            
+            // Cerrar menú contextual
+            var contextMenu = document.getElementById('context-menu');
+            if (contextMenu) {
+              contextMenu.style.display = 'none';
+            }
+            
+
+            // Abrir modal de editar
+            abrirModalEditarCita(info.event);
+            return false;
+          });
+          
           var event = info.event;
           
           // Asegurar que el color se aplique correctamente
@@ -2094,18 +2269,48 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         allDaySlot: false, // Quitar la fila de All Day
         nowIndicator: true, // Mostrar línea de tiempo actual
         height: "100vh",
-        selectable: true,
-        select: function(info) {
-          lastDateClickInfo = info;
-          contextMenu.style.display = 'block';
-          contextMenu.style.left = info.jsEvent.pageX + 'px';
-          contextMenu.style.top = info.jsEvent.pageY + 'px';
-        },
+        selectable: false, // DESACTIVAR selectable para evitar conflictos
+        // select: function(info) {
+        //   lastDateClickInfo = info;
+        //   contextMenu.style.display = 'block';
+        //   contextMenu.style.left = info.jsEvent.pageX + 'px';
+        //   contextMenu.style.top = info.jsEvent.pageY + 'px';
+        // },
         dateClick: function(info) {
-          lastDateClickInfo = info;
-          contextMenu.style.display = 'block';
-          contextMenu.style.left = info.jsEvent.pageX + 'px';
-          contextMenu.style.top = info.jsEvent.pageY + 'px';
+          // Mejorar detección de eventos con múltiples selectores
+          var target = info.jsEvent.target;
+          var isEventElement = target.closest('.fc-event') || 
+                              target.closest('.fc-timegrid-event') ||
+                              target.closest('.fc-event-main') ||
+                              target.closest('.fc-event-title') ||
+                              target.closest('.fc-event-time') ||
+                              target.classList.contains('fc-event') ||
+                              target.classList.contains('fc-timegrid-event');
+          
+          if (!isEventElement) {
+            lastDateClickInfo = info;
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = info.jsEvent.pageX + 'px';
+            contextMenu.style.top = info.jsEvent.pageY + 'px';
+          }
+        },
+        // Agregar eventClick como backup en caso de que eventDidMount no funcione
+        eventClick: function(info) {
+
+          
+          info.jsEvent.preventDefault();
+          info.jsEvent.stopPropagation();
+          info.jsEvent.stopImmediatePropagation();
+          
+          // Cerrar menú contextual
+          var contextMenu = document.getElementById('context-menu');
+          if (contextMenu) {
+            contextMenu.style.display = 'none';
+          }
+          
+          // Abrir modal de editar
+          abrirModalEditarCita(info.event);
+          return false;
         },
       });
       calendar.render();
@@ -2371,6 +2576,112 @@ $puede_gestionar_usuarios = ($user_tipo === 'admin');
         }
       });
     });
+    
+    
+    // Funciones para editar citas
+    function abrirModalEditarCita(event) {
+      // Extraer información del evento
+      var paciente = event.title.split(' (')[0];
+      var servicio = event.title.split('(')[1]?.replace(')','') || '';
+      var fecha = event.start.toISOString().split('T')[0];
+      var horaInicio = event.start.toTimeString().substring(0,5);
+      var horaFin = event.end ? event.end.toTimeString().substring(0,5) : '';
+      var estado = event.extendedProps.estado || '';
+      
+      // Llenar el modal con la información
+      document.getElementById('editarPacienteNombre').textContent = paciente;
+      document.getElementById('editarServicioNombre').textContent = servicio;
+      document.getElementById('editarFecha').value = fecha;
+      document.getElementById('editarHoraInicio').value = horaInicio;
+      document.getElementById('editarHoraFin').value = horaFin;
+      document.getElementById('editarCitaId').value = event.id;
+      
+      // Seleccionar el estado correcto
+      var estadoSelect = document.getElementById('editarEstado');
+      var estadoMap = {
+        'reservado': '1',
+        'confirmado': '2', 
+        'asistió': '3',
+        'no asistió': '4',
+        'pendiente': '5',
+        'en espera': '6'
+      };
+      estadoSelect.value = estadoMap[estado.toLowerCase()] || '1';
+      
+      // Mostrar el modal
+      document.getElementById('modalEditarCita').style.display = 'flex';
+    }
+    
+    // Event listener para cerrar modal de editar
+    document.getElementById('cerrarModalEditarCita').onclick = function() {
+      document.getElementById('modalEditarCita').style.display = 'none';
+    };
+    
+    // Event listener para el formulario de editar cita
+    document.getElementById('formEditarCita').onsubmit = function(e) {
+      e.preventDefault();
+      
+      var citaId = document.getElementById('editarCitaId').value;
+      var fecha = document.getElementById('editarFecha').value;
+      var horaInicio = document.getElementById('editarHoraInicio').value;
+      var horaFin = document.getElementById('editarHoraFin').value;
+      var estadoId = document.getElementById('editarEstado').value;
+      
+      var formData = new FormData();
+      formData.append('cita_id', citaId);
+      formData.append('fecha', fecha);
+      formData.append('hora_inicio', horaInicio);
+      formData.append('hora_fin', horaFin);
+      formData.append('estado_id', estadoId);
+      
+      fetch('actualizar_cita.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(r => r.json())
+      .then(resp => {
+        if (resp.success) {
+          alert('Cita actualizada correctamente.');
+          document.getElementById('modalEditarCita').style.display = 'none';
+          calendar.refetchEvents();
+        } else {
+          alert('Error al actualizar cita: ' + (resp.error || ''));
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error de conexión al actualizar la cita');
+      });
+    };
+    
+    // Event listener para eliminar cita
+    document.getElementById('eliminarCitaBtn').onclick = function() {
+      if (confirm('¿Está seguro de que desea eliminar esta cita?')) {
+        var citaId = document.getElementById('editarCitaId').value;
+        
+        var formData = new FormData();
+        formData.append('cita_id', citaId);
+        
+        fetch('eliminar_cita.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(r => r.json())
+        .then(resp => {
+          if (resp.success) {
+            alert('Cita eliminada correctamente.');
+            document.getElementById('modalEditarCita').style.display = 'none';
+            calendar.refetchEvents();
+          } else {
+            alert('Error al eliminar cita: ' + (resp.error || ''));
+          }
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('Error de conexión al eliminar la cita');
+        });
+      }
+    };
     
     function abrirCatalogo() {
         window.location.href = 'catalogo_servicios.php';
