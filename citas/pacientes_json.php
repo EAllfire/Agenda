@@ -3,7 +3,7 @@ require_once '../includes/db.php';
 header('Content-Type: application/json');
 
 $pacientes = [];
-$result = $conn->query("SELECT id, nombre, apellido, telefono FROM agenda_pacientes ORDER BY nombre, apellido");
+$result = $conn->query("SELECT id, nombre, apellido, telefono FROM portal_pacientes ORDER BY nombre, apellido");
 while ($row = $result->fetch_assoc()) {
     $pacientes[] = [
         'id' => $row['id'],

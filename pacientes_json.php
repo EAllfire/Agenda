@@ -1,7 +1,7 @@
 <?php
 require_once("includes/db.php");
 
-$sql = "SELECT id, CONCAT(nombre, ' ', apellido) as nombre FROM agenda_pacientes ORDER BY nombre";
+$sql = "SELECT id, CONCAT(nombre, ' ', apellido) as nombre FROM portal_pacientes ORDER BY nombre";
 $result = $conn->query($sql);
 
 $pacientes = [];

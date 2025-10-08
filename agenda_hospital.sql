@@ -17,8 +17,8 @@ INSERT INTO agenda_usuarios (nombre, correo, password, tipo) VALUES
 ('Administrador', 'admin@hospital.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
 
 
--- Tabla agenda_pacientes
-CREATE TABLE agenda_pacientes (
+-- Tabla portal_pacientes
+CREATE TABLE portal_pacientes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   apellido VARCHAR(100),
@@ -45,14 +45,14 @@ CREATE TABLE agenda_profesionales (
 );
 
 -- Tabla servicios
-CREATE TABLE agenda_servicios (
+CREATE TABLE portal_servicios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   modalidad_id INT,
   FOREIGN KEY (modalidad_id) REFERENCES agenda_modalidades(id)
 );
 
-INSERT INTO agenda_servicios (nombre, modalidad_id) VALUES
+INSERT INTO portal_servicios (nombre, modalidad_id) VALUES
 ('Radiografía', 1),
 ('Radiografía', 2),
 ('Resonancia Magnética', 3),
@@ -120,7 +120,7 @@ CREATE TABLE agenda_ventas_paquetes (
   notas TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (paciente_id) REFERENCES agenda_pacientes(id),
+  FOREIGN KEY (paciente_id) REFERENCES portal_pacientes(id),
   FOREIGN KEY (paquete_id) REFERENCES agenda_paquetes(id)
 );
 
@@ -138,8 +138,8 @@ CREATE TABLE agenda_ventas_servicios (
   notas TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (paciente_id) REFERENCES agenda_pacientes(id),
-  FOREIGN KEY (servicio_id) REFERENCES agenda_servicios(id),
+  FOREIGN KEY (paciente_id) REFERENCES portal_pacientes(id),
+  FOREIGN KEY (servicio_id) REFERENCES portal_servicios(id),
   FOREIGN KEY (cita_id) REFERENCES agenda_citas(id)
 );
 
@@ -173,9 +173,9 @@ CREATE TABLE agenda_citas (
   tipo VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (paciente_id) REFERENCES agenda_pacientes(id),
+  FOREIGN KEY (paciente_id) REFERENCES portal_pacientes(id),
   FOREIGN KEY (profesional_id) REFERENCES agenda_profesionales(id),
-  FOREIGN KEY (servicio_id) REFERENCES agenda_servicios(id),
+  FOREIGN KEY (servicio_id) REFERENCES portal_servicios(id),
   FOREIGN KEY (modalidad_id) REFERENCES agenda_modalidades(id),
   FOREIGN KEY (estado_id) REFERENCES agenda_estado_cita(id)
 );

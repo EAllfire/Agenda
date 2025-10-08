@@ -16,7 +16,7 @@ try {
     
     // Probar consulta de servicios
     $sql = "SELECT s.id, s.nombre, s.precio, m.nombre as modalidad_nombre 
-            FROM agenda_servicios s 
+            FROM portal_servicios s 
             LEFT JOIN agenda_modalidades m ON s.modalidad_id = m.id 
             LIMIT 3";
     

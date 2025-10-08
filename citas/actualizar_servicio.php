@@ -44,7 +44,7 @@ try {
     }
     
     // Verificar que el servicio existe
-    $stmt_check = $conn->prepare("SELECT id FROM agenda_servicios WHERE id = ?");
+    $stmt_check = $conn->prepare("SELECT id FROM portal_servicios WHERE id = ?");
     $stmt_check->bind_param("i", $id);
     $stmt_check->execute();
     $result_check = $stmt_check->get_result();
@@ -55,7 +55,7 @@ try {
     $stmt_check->close();
     
     // Actualizar servicio
-    $sql = "UPDATE agenda_servicios SET 
+    $sql = "UPDATE portal_servicios SET 
                 nombre = ?, 
                 descripcion = ?, 
                 precio = ?, 

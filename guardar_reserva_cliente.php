@@ -41,7 +41,7 @@ try {
     $conn->begin_transaction();
 
     // 1. Verificar si el paciente ya existe por email
-    $stmt_check = $conn->prepare("SELECT id FROM agenda_pacientes WHERE correo = ? LIMIT 1");
+    $stmt_check = $conn->prepare("SELECT id FROM portal_pacientes WHERE correo = ? LIMIT 1");
     $stmt_check->bind_param("s", $email);
     $stmt_check->execute();
     $result = $stmt_check->get_result();
@@ -52,13 +52,13 @@ try {
         $paciente_id = $paciente['id'];
         
         // Actualizar datos del paciente
-        $stmt_update = $conn->prepare("UPDATE agenda_pacientes SET nombre = ?, apellido = ?, telefono = ? WHERE id = ?");
+        $stmt_update = $conn->prepare("UPDATE portal_pacientes SET nombre = ?, apellido = ?, telefono = ? WHERE id = ?");
         $stmt_update->bind_param("sssi", $nombre, $apellido, $telefono, $paciente_id);
         $stmt_update->execute();
         
     } else {
         // 2. Crear nuevo paciente
-        $stmt_paciente = $conn->prepare("INSERT INTO agenda_pacientes (nombre, apellido, telefono, correo, comentarios, tipo, origen) VALUES (?, ?, ?, ?, ?, 'cliente', 'web')");
+        $stmt_paciente = $conn->prepare("INSERT INTO portal_pacientes (nombre, apellido, telefono, correo, comentarios, tipo, origen) VALUES (?, ?, ?, ?, ?, 'cliente', 'web')");
         $comentarios_paciente = "Fecha nacimiento: " . $fecha_nacimiento . ($observaciones ? " | " . $observaciones : "");
         $stmt_paciente->bind_param("sssss", $nombre, $apellido, $telefono, $email, $comentarios_paciente);
         
@@ -102,7 +102,7 @@ try {
     // 6. Preparar datos según tipo de reserva
     if ($tipo_reserva === 'paquete') {
         // Para paquetes, usar servicio genérico o crear uno
-        $stmt_servicio_paq = $conn->prepare("SELECT id FROM agenda_servicios WHERE nombre LIKE '%paquete%' OR nombre LIKE '%integral%' LIMIT 1");
+        $stmt_servicio_paq = $conn->prepare("SELECT id FROM portal_servicios WHERE nombre LIKE '%paquete%' OR nombre LIKE '%integral%' LIMIT 1");
         $stmt_servicio_paq->execute();
         $result_serv = $stmt_servicio_paq->get_result();
         
@@ -111,7 +111,7 @@ try {
             $servicio_id = $servicio['id'];
         } else {
             // Usar primer servicio disponible
-            $stmt_first_serv = $conn->prepare("SELECT id, modalidad_id FROM agenda_servicios ORDER BY id LIMIT 1");
+            $stmt_first_serv = $conn->prepare("SELECT id, modalidad_id FROM portal_servicios ORDER BY id LIMIT 1");
             $stmt_first_serv->execute();
             $result_first = $stmt_first_serv->get_result();
             if ($result_first->num_rows > 0) {

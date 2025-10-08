@@ -28,7 +28,7 @@ try {
     }
     
     // Verificar que el servicio existe
-    $stmt_check = $conn->prepare("SELECT nombre FROM agenda_servicios WHERE id = ?");
+    $stmt_check = $conn->prepare("SELECT nombre FROM portal_servicios WHERE id = ?");
     $stmt_check->bind_param("i", $id);
     $stmt_check->execute();
     $result_check = $stmt_check->get_result();
@@ -53,7 +53,7 @@ try {
     }
     
     // Eliminar servicio
-    $stmt_delete = $conn->prepare("DELETE FROM agenda_servicios WHERE id = ?");
+    $stmt_delete = $conn->prepare("DELETE FROM portal_servicios WHERE id = ?");
     $stmt_delete->bind_param("i", $id);
     if (!$stmt_delete->execute()) {
         throw new Exception("Error al eliminar el servicio: " . $conn->error);

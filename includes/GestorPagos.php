@@ -146,7 +146,7 @@ class GestorPagos {
         $stmt = $this->conn->prepare("
             SELECT c.tipo, s.precio, c.nota_paciente
             FROM agenda_citas c
-            LEFT JOIN agenda_servicios s ON c.servicio_id = s.id
+            LEFT JOIN portal_servicios s ON c.servicio_id = s.id
             WHERE c.id = ?
         ");
         $stmt->bind_param("i", $cita_id);

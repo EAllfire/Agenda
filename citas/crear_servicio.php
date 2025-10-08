@@ -39,7 +39,7 @@ try {
     }
     
     // Insertar servicio
-    $sql = "INSERT INTO agenda_servicios (nombre, descripcion, precio, modalidad_id, duracion_minutos) VALUES (?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO portal_servicios (nombre, descripcion, precio, modalidad_id, duracion_minutos) VALUES (?, ?, ?, ?, ?)";
     $types = "ssdii";
     $params = [$nombre, $descripcion, $precio, $modalidad_id > 0 ? $modalidad_id : null, $duracion_minutos];
     
