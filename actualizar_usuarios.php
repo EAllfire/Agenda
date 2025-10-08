@@ -5,7 +5,7 @@ echo "<h2>Actualizando tabla usuarios para login con nombre de usuario...</h2>";
 
 try {
     // 1. Verificar si la columna ya existe
-    $result = $conn->query("DESCRIBE usuarios");
+    $result = $conn->query("DESCRIBE agenda_usuarios");
     $columns = [];
     while ($row = $result->fetch_assoc()) {
         $columns[] = $row['Field'];
@@ -32,7 +32,7 @@ try {
         // 3. Actualizar usuarios existentes con nombres de usuario basados en su correo
         echo "<h3>📝 Actualizando usuarios existentes...</h3>";
         
-        $usuarios = $conn->query("SELECT id, correo FROM usuarios");
+        $usuarios = $conn->query("SELECT id, correo FROM agenda_usuarios");
         while ($usuario = $usuarios->fetch_assoc()) {
             // Crear nombre de usuario basado en el correo (parte antes del @)
             $nombre_usuario = explode('@', $usuario['correo'])[0];
@@ -45,7 +45,7 @@ try {
             $nombre_original = $nombre_usuario;
             
             do {
-                $check = $conn->prepare("SELECT id FROM usuarios WHERE nombre_usuario = ?");
+                $check = $conn->prepare("SELECT id FROM agenda_usuarios WHERE nombre_usuario = ?");
                 $check->bind_param("s", $nombre_usuario);
                 $check->execute();
                 $existe = $check->get_result()->num_rows > 0;
@@ -57,7 +57,7 @@ try {
             } while ($existe);
             
             // Actualizar el usuario
-            $update = $conn->prepare("UPDATE usuarios SET nombre_usuario = ? WHERE id = ?");
+            $update = $conn->prepare("UPDATE agenda_usuarios SET nombre_usuario = ? WHERE id = ?");
             $update->bind_param("si", $nombre_usuario, $usuario['id']);
             
             if ($update->execute()) {
@@ -107,7 +107,7 @@ try {
     
     // 7. Mostrar usuarios finales
     echo "<h3>👥 Usuarios configurados:</h3>";
-    $usuarios = $conn->query("SELECT id, nombre, nombre_usuario, correo, tipo FROM usuarios");
+    $usuarios = $conn->query("SELECT id, nombre, nombre_usuario, correo, tipo FROM agenda_usuarios");
     echo "<table border='1' style='border-collapse: collapse; width: 100%;'>";
     echo "<tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Tipo</th></tr>";
     while ($usuario = $usuarios->fetch_assoc()) {

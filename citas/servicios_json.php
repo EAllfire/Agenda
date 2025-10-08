@@ -20,8 +20,8 @@ try {
                 COALESCE(s.modalidad_id, 0) as modalidad_id,
                 COALESCE(s.duracion_minutos, 30) as duracion_minutos,
                 COALESCE(m.nombre, 'Sin modalidad') as modalidad_nombre
-            FROM servicios s
-            LEFT JOIN modalidades m ON s.modalidad_id = m.id
+            FROM agenda_servicios s
+            LEFT JOIN agenda_modalidades m ON s.modalidad_id = m.id
             ORDER BY s.nombre ASC, s.id ASC";
     
     $result = $conn->query($sql);

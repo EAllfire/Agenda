@@ -1,7 +1,7 @@
 <?php
 require_once("includes/db.php");
 
-$sql = "SELECT id, nombre FROM modalidades 
+$sql = "SELECT id, nombre FROM agenda_modalidades 
         ORDER BY 
         CASE 
             WHEN nombre LIKE '%Radiografía%' THEN 1

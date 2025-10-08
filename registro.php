@@ -27,7 +27,7 @@ if ($_POST) {
             $error = 'Tipo de usuario no válido. Solo se permiten usuarios de Caja y Lectura.';
         } else {
             // Verificar si el correo ya existe
-            $stmt = $conn->prepare("SELECT id FROM usuarios WHERE correo = ?");
+            $stmt = $conn->prepare("SELECT id FROM agenda_usuarios WHERE correo = ?");
             $stmt->bind_param("s", $correo);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -37,7 +37,7 @@ if ($_POST) {
             } else {
                 // Crear usuario
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("INSERT INTO usuarios (nombre, correo, password, tipo) VALUES (?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO agenda_usuarios (nombre, correo, password, tipo) VALUES (?, ?, ?, ?)");
                 $stmt->bind_param("ssss", $nombre, $correo, $password_hash, $tipo);
                 
                 if ($stmt->execute()) {

@@ -11,7 +11,7 @@ if (!puedeRealizar('gestionar_usuarios')) {
 }
 
 try {
-    $sql = "SELECT id, nombre FROM modalidades ORDER BY nombre ASC";
+    $sql = "SELECT id, nombre FROM agenda_modalidades ORDER BY nombre ASC";
     $result = $conn->query($sql);
     
     if (!$result) {

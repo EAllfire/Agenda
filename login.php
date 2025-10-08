@@ -22,7 +22,7 @@ if ($_POST) {
     
     if ($usuario && $password) {
         // Primero verificar qué campo de contraseña existe
-        $check_fields = $conn->query("DESCRIBE usuarios");
+        $check_fields = $conn->query("DESCRIBE agenda_usuarios");
         $has_password_hash = false;
         $has_password = false;
         
@@ -38,7 +38,7 @@ if ($_POST) {
         $password_field = $has_password_hash ? 'password_hash' : 'password';
         $activo_field = "COALESCE(activo, 1) as activo"; // Si no existe campo activo, asumir TRUE
         
-        $stmt = $conn->prepare("SELECT id, nombre, nombre_usuario, correo, $password_field as password_hash, tipo, $activo_field FROM usuarios WHERE nombre_usuario = ?");
+        $stmt = $conn->prepare("SELECT id, nombre, nombre_usuario, correo, $password_field as password_hash, tipo, $activo_field FROM agenda_usuarios WHERE nombre_usuario = ?");
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
         $result = $stmt->get_result();

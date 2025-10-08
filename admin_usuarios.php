@@ -21,7 +21,7 @@ if ($_POST && isset($_POST['eliminar_usuario'])) {
     $usuario_id = intval($_POST['usuario_id']);
     
     if ($usuario_id && $usuario_id != $_SESSION['usuario_id']) {
-        $stmt = $conn->prepare("DELETE FROM usuarios WHERE id = ?");
+        $stmt = $conn->prepare("DELETE FROM agenda_usuarios WHERE id = ?");
         $stmt->bind_param("i", $usuario_id);
         
         if ($stmt->execute()) {
@@ -45,7 +45,7 @@ if ($_POST && isset($_POST['editar_usuario'])) {
     
     if ($usuario_id && $nombre && $correo && $tipo) {
         // Verificar si el correo ya existe en otro usuario
-        $stmt = $conn->prepare("SELECT id FROM usuarios WHERE correo = ? AND id != ?");
+        $stmt = $conn->prepare("SELECT id FROM agenda_usuarios WHERE correo = ? AND id != ?");
         $stmt->bind_param("si", $correo, $usuario_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -59,11 +59,11 @@ if ($_POST && isset($_POST['editar_usuario'])) {
                     $error = 'La contraseña debe tener al menos 6 caracteres';
                 } else {
                     $password_hash = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $conn->prepare("UPDATE usuarios SET nombre = ?, correo = ?, tipo = ?, password = ? WHERE id = ?");
+                    $stmt = $conn->prepare("UPDATE agenda_usuarios SET nombre = ?, correo = ?, tipo = ?, password = ? WHERE id = ?");
                     $stmt->bind_param("ssssi", $nombre, $correo, $tipo, $password_hash, $usuario_id);
                 }
             } else {
-                $stmt = $conn->prepare("UPDATE usuarios SET nombre = ?, correo = ?, tipo = ? WHERE id = ?");
+                $stmt = $conn->prepare("UPDATE agenda_usuarios SET nombre = ?, correo = ?, tipo = ? WHERE id = ?");
                 $stmt->bind_param("sssi", $nombre, $correo, $tipo, $usuario_id);
             }
             
@@ -93,7 +93,7 @@ if ($_POST && isset($_POST['crear_admin'])) {
             $error = 'La contraseña debe tener al menos 6 caracteres';
         } else {
             // Verificar si el correo ya existe
-            $stmt = $conn->prepare("SELECT id FROM usuarios WHERE correo = ?");
+            $stmt = $conn->prepare("SELECT id FROM agenda_usuarios WHERE correo = ?");
             $stmt->bind_param("s", $correo);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -103,7 +103,7 @@ if ($_POST && isset($_POST['crear_admin'])) {
             } else {
                 // Crear usuario admin
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("INSERT INTO usuarios (nombre, correo, password, tipo) VALUES (?, ?, ?, 'admin')");
+                $stmt = $conn->prepare("INSERT INTO agenda_usuarios (nombre, correo, password, tipo) VALUES (?, ?, ?, 'admin')");
                 $stmt->bind_param("sss", $nombre, $correo, $password_hash);
                 
                 if ($stmt->execute()) {
@@ -121,7 +121,7 @@ if ($_POST && isset($_POST['crear_admin'])) {
 
 // Obtener todos los usuarios para mostrar
 $usuarios = [];
-$result = $conn->query("SELECT id, nombre, correo, tipo FROM usuarios ORDER BY tipo DESC, nombre ASC");
+$result = $conn->query("SELECT id, nombre, correo, tipo FROM agenda_usuarios ORDER BY tipo DESC, nombre ASC");
 while ($row = $result->fetch_assoc()) {
     $usuarios[] = $row;
 }

@@ -1,7 +1,7 @@
 <?php
 require_once("includes/db.php");
 
-$sql = "SELECT * FROM estado_cita ORDER BY id";
+$sql = "SELECT * FROM agenda_estado_cita ORDER BY id";
 $result = $conn->query($sql);
 
 $estados = [];

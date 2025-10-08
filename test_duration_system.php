@@ -14,7 +14,7 @@ while($row = $result->fetch_assoc()) {
 echo "</ul>";
 
 // Verificar los datos actuales
-$result = $conn->query("SELECT id, nombre, duracion_minutos, descripcion FROM servicios LIMIT 5");
+$result = $conn->query("SELECT id, nombre, duracion_minutos, descripcion FROM agenda_servicios LIMIT 5");
 echo "<h3>Muestra de servicios con duración:</h3>";
 echo "<table border='1' cellpadding='5'>";
 echo "<tr><th>ID</th><th>Nombre</th><th>Duración (min)</th><th>Descripción</th></tr>";

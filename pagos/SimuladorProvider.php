@@ -108,7 +108,7 @@ class SimuladorProvider extends ProveedorPago {
     }
     
     private function actualizarEstadoCita($cita_id, $estado_pago) {
-        $stmt = $this->conn->prepare("UPDATE citas SET estado_pago = ? WHERE id = ?");
+        $stmt = $this->conn->prepare("UPDATE agenda_citas SET estado_pago = ? WHERE id = ?");
         $stmt->bind_param("si", $estado_pago, $cita_id);
         return $stmt->execute();
     }

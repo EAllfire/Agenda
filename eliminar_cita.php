@@ -21,7 +21,7 @@ try {
         }
         
         // Verificar que la cita existe
-        $stmt = $conn->prepare("SELECT id FROM citas WHERE id = ?");
+        $stmt = $conn->prepare("SELECT id FROM agenda_citas WHERE id = ?");
         $stmt->bind_param("i", $cita_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -32,7 +32,7 @@ try {
         }
         
         // Eliminar la cita
-        $stmt = $conn->prepare("DELETE FROM citas WHERE id = ?");
+        $stmt = $conn->prepare("DELETE FROM agenda_citas WHERE id = ?");
         $stmt->bind_param("i", $cita_id);
         
         if ($stmt->execute()) {

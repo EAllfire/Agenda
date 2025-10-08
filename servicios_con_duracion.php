@@ -8,7 +8,7 @@ if (!$modalidad_id || !is_numeric($modalidad_id)) {
     exit;
 }
 
-$sql = "SELECT id, nombre, duracion_minutos FROM servicios WHERE modalidad_id = ? ORDER BY nombre";
+$sql = "SELECT id, nombre, duracion_minutos FROM agenda_servicios WHERE modalidad_id = ? ORDER BY nombre";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $modalidad_id);
 $stmt->execute();

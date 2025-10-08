@@ -14,7 +14,7 @@ try {
     }
 
     // Verificar que la cita existe y necesita pago
-    $stmt = $conn->prepare("SELECT id, estado_pago FROM citas WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id, estado_pago FROM agenda_citas WHERE id = ?");
     $stmt->bind_param("i", $cita_id);
     $stmt->execute();
     $result = $stmt->get_result();

@@ -1,8 +1,8 @@
 CREATE DATABASE agenda_hospital;
 USE agenda_hospital;
 
--- Tabla usuarios
-CREATE TABLE usuarios (
+-- Tabla agenda_usuarios
+CREATE TABLE agenda_usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   correo VARCHAR(100) UNIQUE NOT NULL,
@@ -13,12 +13,12 @@ CREATE TABLE usuarios (
 -- Insertar usuario administrador por defecto
 -- Usuario: admin@hospital.com
 -- Contraseña: admin123
-INSERT INTO usuarios (nombre, correo, password, tipo) VALUES 
+INSERT INTO agenda_usuarios (nombre, correo, password, tipo) VALUES 
 ('Administrador', 'admin@hospital.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
 
 
--- Tabla pacientes
-CREATE TABLE pacientes (
+-- Tabla agenda_pacientes
+CREATE TABLE agenda_pacientes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   apellido VARCHAR(100),
@@ -37,22 +37,22 @@ INSERT INTO pacientes (nombre, apellido, telefono, correo, diagnostico, tipo, or
 ('Ana', 'López', '625118884', 'ana.lopez@email.com', 'Chequeo prenatal', 'adulto', 'externo'),
 ('Carlos', 'Rodríguez', '625118885', 'carlos.rodriguez@email.com', 'Examen cardiológico', 'adulto', 'interno');
 
--- Tabla profesionales
-CREATE TABLE profesionales (
+-- Tabla agenda_profesionales
+CREATE TABLE agenda_profesionales (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   especialidad VARCHAR(100)
 );
 
 -- Tabla servicios
-CREATE TABLE servicios (
+CREATE TABLE agenda_servicios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   modalidad_id INT,
-  FOREIGN KEY (modalidad_id) REFERENCES modalidades(id)
+  FOREIGN KEY (modalidad_id) REFERENCES agenda_modalidades(id)
 );
 
-INSERT INTO servicios (nombre, modalidad_id) VALUES
+INSERT INTO agenda_servicios (nombre, modalidad_id) VALUES
 ('Radiografía', 1),
 ('Radiografía', 2),
 ('Resonancia Magnética', 3),
@@ -70,13 +70,13 @@ INSERT INTO servicios (nombre, modalidad_id) VALUES
 ('Marcadores Tumorales', 8);
 
 -- Tabla modalidades (recursos para el calendario)
-CREATE TABLE modalidades (
+CREATE TABLE agenda_modalidades (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   descripcion TEXT
 );
 
-INSERT INTO modalidades (nombre) VALUES
+INSERT INTO agenda_modalidades (nombre) VALUES
 ('Radiografía Sala 1'),
 ('Radiografía Sala 2'),
 ('Resonancia Magnética'),
@@ -87,14 +87,29 @@ INSERT INTO modalidades (nombre) VALUES
 -- Modalidades de Laboratorios (sin control de salas específicas)
 ('Laboratorios');
 
--- Tabla profesionales"Consulta Prenatal", "Ultrasonido Obstétrico", "Laboratorios Maternales", "Atención del Parto"]', 270),
+-- Tabla agenda_paquetes
+CREATE TABLE agenda_paquetes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(200) NOT NULL,
+  descripcion TEXT,
+  precio DECIMAL(10,2) NOT NULL,
+  servicios_incluidos JSON,
+  duracion_dias INT DEFAULT 30,
+  activo BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insertar paquetes de ejemplo
+INSERT INTO agenda_paquetes (nombre, descripcion, precio, servicios_incluidos, duracion_dias) VALUES
+('Paquete Maternidad', 'Atención integral durante el embarazo', 12000.00, '["Consulta Prenatal", "Ultrasonido Obstétrico", "Laboratorios Maternales", "Atención del Parto"]', 270),
 ('Paquete Chequeo Ejecutivo', 'Chequeo médico completo con estudios de imagen y laboratorios', 8500.00, '["Consulta Médica", "Radiografía de Tórax", "Electrocardiograma", "Perfil Completo de Laboratorios"]', 365),
 ('Paquete Cesárea', 'Procedimiento de cesárea con hospitalización y medicamentos', 25000.00, '["Cesárea", "Hospitalización 3 días", "Medicamentos", "Consulta de seguimiento"]', 30),
 ('Paquete Cirugía General', 'Cirugía general ambulatoria con consultas de seguimiento', 18000.00, '["Consulta Preoperatoria", "Cirugía", "Medicamentos", "Consultas de Seguimiento"]', 60),
 ('Paquete Cirugía Cardiovascular', 'Procedimiento cardiovascular con hospitalización especializada', 45000.00, '["Estudios Preoperatorios", "Cirugía Cardiovascular", "Hospitalización", "Seguimiento Especializado"]', 90);
 
 -- Tabla para ventas de paquetes
-CREATE TABLE ventas_paquetes (
+CREATE TABLE agenda_ventas_paquetes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   paciente_id INT,
   paquete_id INT,
@@ -105,12 +120,12 @@ CREATE TABLE ventas_paquetes (
   notas TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (paciente_id) REFERENCES pacientes(id),
-  FOREIGN KEY (paquete_id) REFERENCES paquetes(id)
+  FOREIGN KEY (paciente_id) REFERENCES agenda_pacientes(id),
+  FOREIGN KEY (paquete_id) REFERENCES agenda_paquetes(id)
 );
 
 -- Tabla para ventas de servicios individuales
-CREATE TABLE ventas_servicios (
+CREATE TABLE agenda_ventas_servicios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   paciente_id INT,
   servicio_id INT,
@@ -123,18 +138,18 @@ CREATE TABLE ventas_servicios (
   notas TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (paciente_id) REFERENCES pacientes(id),
-  FOREIGN KEY (servicio_id) REFERENCES servicios(id),
-  FOREIGN KEY (cita_id) REFERENCES citas(id)
+  FOREIGN KEY (paciente_id) REFERENCES agenda_pacientes(id),
+  FOREIGN KEY (servicio_id) REFERENCES agenda_servicios(id),
+  FOREIGN KEY (cita_id) REFERENCES agenda_citas(id)
 );
 
 -- Tabla estados de citas
-CREATE TABLE estado_cita (
+CREATE TABLE agenda_estado_cita (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(50) NOT NULL
 );
 
-INSERT INTO estado_cita (id, nombre) VALUES
+INSERT INTO agenda_estado_cita (id, nombre) VALUES
 (1, 'reservado'),
 (2, 'confirmado'),
 (3, 'asistió'),
@@ -143,7 +158,7 @@ INSERT INTO estado_cita (id, nombre) VALUES
 (6, 'en espera');
 
 -- Tabla citas
-CREATE TABLE citas (
+CREATE TABLE agenda_citas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   fecha DATE NOT NULL,
   hora_inicio TIME NOT NULL,
@@ -158,9 +173,9 @@ CREATE TABLE citas (
   tipo VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (paciente_id) REFERENCES pacientes(id),
-  FOREIGN KEY (profesional_id) REFERENCES profesionales(id),
-  FOREIGN KEY (servicio_id) REFERENCES servicios(id),
-  FOREIGN KEY (modalidad_id) REFERENCES modalidades(id),
-  FOREIGN KEY (estado_id) REFERENCES estado_cita(id)
+  FOREIGN KEY (paciente_id) REFERENCES agenda_pacientes(id),
+  FOREIGN KEY (profesional_id) REFERENCES agenda_profesionales(id),
+  FOREIGN KEY (servicio_id) REFERENCES agenda_servicios(id),
+  FOREIGN KEY (modalidad_id) REFERENCES agenda_modalidades(id),
+  FOREIGN KEY (estado_id) REFERENCES agenda_estado_cita(id)
 );

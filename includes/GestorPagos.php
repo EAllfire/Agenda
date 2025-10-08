@@ -145,8 +145,8 @@ class GestorPagos {
         // Obtener información de la cita y servicio
         $stmt = $this->conn->prepare("
             SELECT c.tipo, s.precio, c.nota_paciente
-            FROM citas c
-            LEFT JOIN servicios s ON c.servicio_id = s.id
+            FROM agenda_citas c
+            LEFT JOIN agenda_servicios s ON c.servicio_id = s.id
             WHERE c.id = ?
         ");
         $stmt->bind_param("i", $cita_id);

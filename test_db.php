@@ -16,8 +16,8 @@ try {
     
     // Probar consulta de servicios
     $sql = "SELECT s.id, s.nombre, s.precio, m.nombre as modalidad_nombre 
-            FROM servicios s 
-            LEFT JOIN modalidades m ON s.modalidad_id = m.id 
+            FROM agenda_servicios s 
+            LEFT JOIN agenda_modalidades m ON s.modalidad_id = m.id 
             LIMIT 3";
     
     $result = $conn->query($sql);

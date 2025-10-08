@@ -11,7 +11,7 @@ $password = 'admin123';
 $tipo = 'admin';
 
 // Verificar si ya existe
-$check = $conn->query("SELECT id FROM usuarios WHERE correo = '$correo' OR nombre_usuario = '$nombre_usuario'");
+$check = $conn->query("SELECT id FROM agenda_usuarios WHERE correo = '$correo' OR nombre_usuario = '$nombre_usuario'");
 
 if ($check->num_rows > 0) {
     echo '<div style="color: orange; padding: 10px; border: 1px solid orange; background: #fff3cd;">';
@@ -19,7 +19,7 @@ if ($check->num_rows > 0) {
     echo '</div>';
     
     echo '<h3>Usuarios existentes:</h3>';
-    $users = $conn->query('SELECT id, nombre, correo, nombre_usuario, tipo FROM usuarios');
+    $users = $conn->query('SELECT id, nombre, correo, nombre_usuario, tipo FROM agenda_usuarios');
     if ($users->num_rows > 0) {
         echo '<table border="1" style="border-collapse: collapse;">';
         echo '<tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Usuario</th><th>Tipo</th></tr>';
@@ -36,7 +36,7 @@ if ($check->num_rows > 0) {
     }
 } else {
     // Verificar qué campo de contraseña usar
-    $check_fields = $conn->query("DESCRIBE usuarios");
+    $check_fields = $conn->query("DESCRIBE agenda_usuarios");
     $password_field = 'password';
     
     while ($field = $check_fields->fetch_assoc()) {
@@ -51,7 +51,7 @@ if ($check->num_rows > 0) {
     
     // Verificar si existe campo nombre_usuario
     $has_username_field = false;
-    $check_fields = $conn->query("DESCRIBE usuarios");
+    $check_fields = $conn->query("DESCRIBE agenda_usuarios");
     while ($field = $check_fields->fetch_assoc()) {
         if ($field['Field'] === 'nombre_usuario') {
             $has_username_field = true;
@@ -61,12 +61,12 @@ if ($check->num_rows > 0) {
     
     if ($has_username_field) {
         // Insertar con nombre_usuario
-        $sql = "INSERT INTO usuarios (nombre, correo, nombre_usuario, $password_field, tipo) VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO agenda_usuarios (nombre, correo, nombre_usuario, $password_field, tipo) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sssss", $nombre, $correo, $nombre_usuario, $password_hash, $tipo);
     } else {
         // Insertar sin nombre_usuario (campo no existe aún)
-        $sql = "INSERT INTO usuarios (nombre, correo, $password_field, tipo) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO agenda_usuarios (nombre, correo, $password_field, tipo) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssss", $nombre, $correo, $password_hash, $tipo);
     }

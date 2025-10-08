@@ -41,7 +41,7 @@ try {
     $conn->begin_transaction();
 
     // 1. Verificar si el paciente ya existe por email
-    $stmt_check = $conn->prepare("SELECT id FROM pacientes WHERE correo = ? LIMIT 1");
+    $stmt_check = $conn->prepare("SELECT id FROM agenda_pacientes WHERE correo = ? LIMIT 1");
     $stmt_check->bind_param("s", $email);
     $stmt_check->execute();
     $result = $stmt_check->get_result();
@@ -52,13 +52,13 @@ try {
         $paciente_id = $paciente['id'];
         
         // Actualizar datos del paciente
-        $stmt_update = $conn->prepare("UPDATE pacientes SET nombre = ?, apellido = ?, telefono = ? WHERE id = ?");
+        $stmt_update = $conn->prepare("UPDATE agenda_pacientes SET nombre = ?, apellido = ?, telefono = ? WHERE id = ?");
         $stmt_update->bind_param("sssi", $nombre, $apellido, $telefono, $paciente_id);
         $stmt_update->execute();
         
     } else {
         // 2. Crear nuevo paciente
-        $stmt_paciente = $conn->prepare("INSERT INTO pacientes (nombre, apellido, telefono, correo, comentarios, tipo, origen) VALUES (?, ?, ?, ?, ?, 'cliente', 'web')");
+        $stmt_paciente = $conn->prepare("INSERT INTO agenda_pacientes (nombre, apellido, telefono, correo, comentarios, tipo, origen) VALUES (?, ?, ?, ?, ?, 'cliente', 'web')");
         $comentarios_paciente = "Fecha nacimiento: " . $fecha_nacimiento . ($observaciones ? " | " . $observaciones : "");
         $stmt_paciente->bind_param("sssss", $nombre, $apellido, $telefono, $email, $comentarios_paciente);
         
@@ -75,7 +75,7 @@ try {
     $hora_fin = date("H:i:s", $hora_fin_timestamp);
 
     // 4. Obtener ID del estado "reservado" (o crear uno por defecto)
-    $stmt_estado = $conn->prepare("SELECT id FROM estado_cita WHERE nombre = 'reservado' LIMIT 1");
+    $stmt_estado = $conn->prepare("SELECT id FROM agenda_estado_cita WHERE nombre = 'reservado' LIMIT 1");
     $stmt_estado->execute();
     $result_estado = $stmt_estado->get_result();
     
@@ -88,7 +88,7 @@ try {
     }
 
     // 5. Obtener profesional por defecto (primer profesional activo)
-    $stmt_prof = $conn->prepare("SELECT id FROM profesionales ORDER BY id LIMIT 1");
+    $stmt_prof = $conn->prepare("SELECT id FROM agenda_profesionales ORDER BY id LIMIT 1");
     $stmt_prof->execute();
     $result_prof = $stmt_prof->get_result();
     
@@ -102,7 +102,7 @@ try {
     // 6. Preparar datos según tipo de reserva
     if ($tipo_reserva === 'paquete') {
         // Para paquetes, usar servicio genérico o crear uno
-        $stmt_servicio_paq = $conn->prepare("SELECT id FROM servicios WHERE nombre LIKE '%paquete%' OR nombre LIKE '%integral%' LIMIT 1");
+        $stmt_servicio_paq = $conn->prepare("SELECT id FROM agenda_servicios WHERE nombre LIKE '%paquete%' OR nombre LIKE '%integral%' LIMIT 1");
         $stmt_servicio_paq->execute();
         $result_serv = $stmt_servicio_paq->get_result();
         
@@ -111,7 +111,7 @@ try {
             $servicio_id = $servicio['id'];
         } else {
             // Usar primer servicio disponible
-            $stmt_first_serv = $conn->prepare("SELECT id, modalidad_id FROM servicios ORDER BY id LIMIT 1");
+            $stmt_first_serv = $conn->prepare("SELECT id, modalidad_id FROM agenda_servicios ORDER BY id LIMIT 1");
             $stmt_first_serv->execute();
             $result_first = $stmt_first_serv->get_result();
             if ($result_first->num_rows > 0) {
@@ -134,7 +134,7 @@ try {
     }
 
     // 7. Verificar empalme de citas
-    $sqlEmpalme = "SELECT COUNT(*) as total FROM citas 
+    $sqlEmpalme = "SELECT COUNT(*) as total FROM agenda_citas 
                    WHERE fecha = ? AND modalidad_id = ? 
                    AND ((hora_inicio < ? AND hora_fin > ?) 
                    OR (hora_inicio < ? AND hora_fin > ?) 
@@ -156,7 +156,7 @@ try {
     }
 
     // 8. Crear la cita
-    $stmt_cita = $conn->prepare("INSERT INTO citas (fecha, hora_inicio, hora_fin, paciente_id, profesional_id, servicio_id, modalidad_id, estado_id, nota_paciente, nota_interna, tipo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt_cita = $conn->prepare("INSERT INTO agenda_citas (fecha, hora_inicio, hora_fin, paciente_id, profesional_id, servicio_id, modalidad_id, estado_id, nota_paciente, nota_interna, tipo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     
     $nota_interna = "Reserva web - Cliente: " . $nombre_completo . " | Email: " . $email;
     $tipo_cita = ($tipo_reserva === 'paquete') ? 'paquete' : 'individual';

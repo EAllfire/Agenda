@@ -28,7 +28,7 @@ try {
     }
     
     // Verificar que el servicio existe
-    $stmt_check = $conn->prepare("SELECT nombre FROM servicios WHERE id = ?");
+    $stmt_check = $conn->prepare("SELECT nombre FROM agenda_servicios WHERE id = ?");
     $stmt_check->bind_param("i", $id);
     $stmt_check->execute();
     $result_check = $stmt_check->get_result();
@@ -41,7 +41,7 @@ try {
     $stmt_check->close();
     
     // Verificar si hay citas asociadas al servicio
-    $stmt_citas = $conn->prepare("SELECT COUNT(*) as total FROM citas WHERE servicio_id = ?");
+    $stmt_citas = $conn->prepare("SELECT COUNT(*) as total FROM agenda_citas WHERE servicio_id = ?");
     $stmt_citas->bind_param("i", $id);
     $stmt_citas->execute();
     $result_citas = $stmt_citas->get_result();
@@ -53,7 +53,7 @@ try {
     }
     
     // Eliminar servicio
-    $stmt_delete = $conn->prepare("DELETE FROM servicios WHERE id = ?");
+    $stmt_delete = $conn->prepare("DELETE FROM agenda_servicios WHERE id = ?");
     $stmt_delete->bind_param("i", $id);
     if (!$stmt_delete->execute()) {
         throw new Exception("Error al eliminar el servicio: " . $conn->error);

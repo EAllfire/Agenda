@@ -6,7 +6,7 @@ echo '<h2>VERIFICACIÓN DE ESTRUCTURA DE TABLA USUARIOS</h2>';
 // Mostrar estructura de la tabla
 echo '<h3>1. Estructura de la tabla usuarios:</h3>';
 echo '<ul>';
-$result = $conn->query('DESCRIBE usuarios');
+$result = $conn->query('DESCRIBE agenda_usuarios');
 while ($row = $result->fetch_assoc()) {
     echo '<li><strong>' . $row['Field'] . '</strong> (' . $row['Type'] . ')';
     if ($row['Null'] === 'NO') echo ' NOT NULL';
@@ -17,7 +17,7 @@ while ($row = $result->fetch_assoc()) {
 echo '</ul>';
 
 echo '<h3>2. Usuarios existentes:</h3>';
-$users = $conn->query('SELECT id, nombre, correo, nombre_usuario, tipo FROM usuarios LIMIT 5');
+$users = $conn->query('SELECT id, nombre, correo, nombre_usuario, tipo FROM agenda_usuarios LIMIT 5');
 if ($users->num_rows > 0) {
     echo '<table border="1" style="border-collapse: collapse;">';
     echo '<tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Usuario</th><th>Tipo</th></tr>';
@@ -36,7 +36,7 @@ if ($users->num_rows > 0) {
 }
 
 echo '<h3>3. Total de usuarios:</h3>';
-$count = $conn->query('SELECT COUNT(*) as total FROM usuarios');
+$count = $conn->query('SELECT COUNT(*) as total FROM agenda_usuarios');
 echo '<p>Total: <strong>' . $count->fetch_assoc()['total'] . '</strong></p>';
 
 // Verificar si existe algún campo de contraseña

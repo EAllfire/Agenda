@@ -23,7 +23,7 @@ $response = [];
 try {
     if ($fecha && $hora_inicio && $hora_fin && $paciente_id && $profesional_id && $servicio_id && $modalidad_id && $estado_id) {
         // Validar empalme de citas en la misma modalidad y fecha
-        $sqlEmpalme = "SELECT COUNT(*) as total FROM citas WHERE fecha = ? AND modalidad_id = ? AND ((hora_inicio < ? AND hora_fin > ?) OR (hora_inicio < ? AND hora_fin > ?) OR (hora_inicio >= ? AND hora_inicio < ?))";
+        $sqlEmpalme = "SELECT COUNT(*) as total FROM agenda_citas WHERE fecha = ? AND modalidad_id = ? AND ((hora_inicio < ? AND hora_fin > ?) OR (hora_inicio < ? AND hora_fin > ?) OR (hora_inicio >= ? AND hora_inicio < ?))";
         $stmtEmpalme = $conn->prepare($sqlEmpalme);
         if (!$stmtEmpalme) {
             throw new Exception("Error en prepare empalme: " . $conn->error);
@@ -46,7 +46,7 @@ try {
         if ($rowEmpalme['total'] > 0) {
             $response = ["success" => false, "error" => "Ya existe una cita en ese horario para la modalidad seleccionada."];
         } else {
-            $stmt = $conn->prepare("INSERT INTO citas (fecha, paciente_id, profesional_id, servicio_id, estado_id, nota_paciente, nota_interna, hora_inicio, hora_fin, modalidad_id, tipo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO agenda_citas (fecha, paciente_id, profesional_id, servicio_id, estado_id, nota_paciente, nota_interna, hora_inicio, hora_fin, modalidad_id, tipo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (!$stmt) {
                 throw new Exception("Error en prepare: " . $conn->error);
             }

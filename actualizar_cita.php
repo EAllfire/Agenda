@@ -25,7 +25,7 @@ try {
         }
         
         // Verificar que la cita existe
-        $stmt = $conn->prepare("SELECT id FROM citas WHERE id = ?");
+        $stmt = $conn->prepare("SELECT id FROM agenda_citas WHERE id = ?");
         $stmt->bind_param("i", $cita_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -38,10 +38,10 @@ try {
         // Verificar solapamiento de horarios (excluyendo la cita actual)
         $stmt = $conn->prepare("
             SELECT COUNT(*) as total 
-            FROM citas 
+            FROM agenda_citas 
             WHERE fecha = ? 
             AND id != ?
-            AND modalidad_id = (SELECT modalidad_id FROM citas WHERE id = ?)
+            AND modalidad_id = (SELECT modalidad_id FROM agenda_citas WHERE id = ?)
             AND (
                 (hora_inicio < ? AND hora_fin > ?) OR
                 (hora_inicio < ? AND hora_fin > ?) OR
@@ -60,7 +60,7 @@ try {
         
         // Actualizar la cita
         $stmt = $conn->prepare("
-            UPDATE citas 
+            UPDATE agenda_citas 
             SET fecha = ?, hora_inicio = ?, hora_fin = ?, estado_id = ?
             WHERE id = ?
         ");

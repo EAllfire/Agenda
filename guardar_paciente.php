@@ -18,7 +18,7 @@ $comentarios = $_POST['comentarios'] ?? '';
 error_log('guardar_paciente.php datos recibidos: ' . json_encode($_POST));
 
 if ($nombre && $apellido) {
-    $stmt = $conn->prepare("INSERT INTO pacientes (nombre, apellido, telefono, correo, diagnostico, tipo, origen, comentarios) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO agenda_pacientes (nombre, apellido, telefono, correo, diagnostico, tipo, origen, comentarios) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     if (!$stmt) {
         echo json_encode(["success" => false, "error" => $conn->error]);
         exit;

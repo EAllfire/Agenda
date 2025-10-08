@@ -42,7 +42,7 @@ try {
         $estado_id = $estados_map[$nuevo_estado];
         
         // Actualizar el estado de la cita
-        $stmt = $conn->prepare("UPDATE citas SET estado_id = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE agenda_citas SET estado_id = ? WHERE id = ?");
         if (!$stmt) {
             throw new Exception("Error en prepare: " . $conn->error);
         }
