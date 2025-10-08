@@ -2,7 +2,7 @@
 require_once("includes/db.php");
 
 $sql = "SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, c.modalidad_id, c.estado_id, e.nombre AS estado,
-    p.nombre AS paciente, p.tipo AS tipo_paciente, p.telefono, p.diagnostico,
+    p.nombre AS paciente, p.tipo AS tipo_paciente, p.telefono, p.alergias AS diagnostico,
     s.nombre AS servicio, s.id AS servicio_id
   FROM agenda_citas c
   JOIN portal_pacientes p ON c.paciente_id = p.id

@@ -54,13 +54,13 @@ try {
     }
     $stmt_check->close();
     
-    // Actualizar servicio
+    // Actualizar servicio - MAPEO: modalidad_id -> modalidad, duracion_minutos -> duracion
     $sql = "UPDATE portal_servicios SET 
                 nombre = ?, 
                 descripcion = ?, 
                 precio = ?, 
-                modalidad_id = ?,
-                duracion_minutos = ?
+                modalidad = ?,
+                duracion = ?
             WHERE id = ?";
     
     $stmt = $conn->prepare($sql);

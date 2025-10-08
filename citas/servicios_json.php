@@ -17,11 +17,11 @@ try {
                 s.nombre,
                 COALESCE(s.descripcion, '') as descripcion,
                 COALESCE(s.precio, 0) as precio,
-                COALESCE(s.modalidad_id, 0) as modalidad_id,
-                COALESCE(s.duracion_minutos, 30) as duracion_minutos,
+                COALESCE(s.modalidad, 0) as modalidad_id,
+                COALESCE(s.duracion, 30) as duracion_minutos,
                 COALESCE(m.nombre, 'Sin modalidad') as modalidad_nombre
             FROM portal_servicios s
-            LEFT JOIN agenda_modalidades m ON s.modalidad_id = m.id
+            LEFT JOIN agenda_modalidades m ON s.modalidad = m.id
             ORDER BY s.nombre ASC, s.id ASC";
     
     $result = $conn->query($sql);

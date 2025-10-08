@@ -4,8 +4,8 @@ header('Content-Type: application/json');
 
 $modalidad_id = isset($_GET['modalidad_id']) ? intval($_GET['modalidad_id']) : 0;
 
-// Consulta para obtener servicios basado en modalidad_id
-$sql = "SELECT id, nombre, duracion_minutos FROM portal_servicios WHERE modalidad_id = ?";
+// Consulta para obtener servicios basado en modalidad_id -> modalidad (remoto)
+$sql = "SELECT id, nombre, duracion AS duracion_minutos FROM portal_servicios WHERE modalidad = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $modalidad_id);
 $stmt->execute();

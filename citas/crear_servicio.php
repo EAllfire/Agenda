@@ -38,8 +38,8 @@ try {
         throw new Exception("La duración debe estar entre 5 y 180 minutos");
     }
     
-    // Insertar servicio
-    $sql = "INSERT INTO portal_servicios (nombre, descripcion, precio, modalidad_id, duracion_minutos) VALUES (?, ?, ?, ?, ?)";
+    // Insertar servicio - MAPEO: modalidad_id -> modalidad, duracion_minutos -> duracion
+    $sql = "INSERT INTO portal_servicios (nombre, descripcion, precio, modalidad, duracion) VALUES (?, ?, ?, ?, ?)";
     $types = "ssdii";
     $params = [$nombre, $descripcion, $precio, $modalidad_id > 0 ? $modalidad_id : null, $duracion_minutos];
     

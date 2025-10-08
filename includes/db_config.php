@@ -1,12 +1,21 @@
 <?php
-// Configuración de base de datos - Hospital Angeles  
-// Actualizado: 7 de octubre de 2025 - Conexión remota
+// Configuración de base de datos - Hospital Angeles
+// Actualizado: 7 de octubre de 2025
 
 // CONFIGURACIÓN REMOTA (PRODUCCIÓN)
 $servername = "107.180.11.215";
 $username = "eli";
 $password = "HACeli2025";
 $dbname = "hac";
+
+/* 
+// CONFIGURACIÓN LOCAL (DESARROLLO - MAMP)
+// Descomenta estas líneas para usar base de datos local
+$servername = "localhost";
+$username = "root";
+$password = "root";
+$dbname = "agenda_hospital";
+*/
 
 // Crear conexión con configuración mejorada
 $conn = new mysqli($servername, $username, $password, $dbname);
